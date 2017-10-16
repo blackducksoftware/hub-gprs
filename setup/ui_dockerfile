@@ -1,0 +1,8 @@
+FROM java:openjdk-8-alpine
+ARG HUB_URL
+ADD ./build/libs/ /opt/hub-scm-ui/
+RUN apk update && apk add openssl
+RUN sh -c "echo ${HUB_URL}"
+RUN sh -c 'openssl s_client -connect ${HUB_URL} < /dev/null |  sed -ne "/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p" > /var/tmp/hub.cert'; exit 0
+RUN keytool -import -trustcacerts -noprompt -keystore "$JAVA_HOME/jre/lib/security/cacerts" -storepass changeit -alias hubserver -file /var/tmp/hub.cert
+ENTRYPOINT java -jar /opt/hub-scm-ui/*.jar

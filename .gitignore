@@ -25,3 +25,7 @@ dist/
 nbdist/
 .nb-gradle/
 
+### Setup/Deployment artifacts
+/setup/keys
+/setup/.env
+/setup/*.log
