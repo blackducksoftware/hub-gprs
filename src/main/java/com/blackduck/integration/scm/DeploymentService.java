@@ -1,0 +1,109 @@
+/*******************************************************************************
+ * Copyright (C) 2017 Black Duck Software, Inc.
+ * http://www.blackducksoftware.com/
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *******************************************************************************/
+
+package com.blackduck.integration.scm;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.blackduck.integration.scm.ci.Build;
+import com.blackduck.integration.scm.ci.ConcourseClient;
+import com.blackduck.integration.scm.ci.CICommunicationException;
+
+//TODO: Merge with ConcourseClient (or better delineate responsibilities)
+@Service
+public class DeploymentService {
+
+	private static final Logger logger = LoggerFactory.getLogger(DeploymentService.class);
+
+	@Inject
+	private ConcourseClient concourseClient;
+
+	@Inject
+	private BuildMonitor buildMonitor;
+
+	@Value("${blackduck.hub.url}")
+	private String hubUrl;
+	@Value("${blackduck.hub.username}")
+	private String hubUsername;
+	@Value("${blackduck.hub.password}")
+	private String hubPassword;
+
+	private PipelineFactory pipelineFactory = new PipelineFactory();
+
+	public void deploy(String buildImage, String buildImageTag, String buildCommand, Map<String, String> params,
+			String pipelineName) {
+		HashMap<String, String> fullParams = new HashMap<>(params);
+		// Add hub info
+
+		fullParams.put("hub_username", hubUsername);
+		fullParams.put("hub_password", hubPassword);
+		fullParams.put("hub_url", hubUrl);
+		// Add build info
+		fullParams.put("build_image", buildImage);
+		fullParams.put("build_image_tag", buildImageTag);
+		fullParams.put("build_command", buildCommand);
+
+		String pipelineConfig = pipelineFactory.generatePipelineConfig(fullParams);
+		concourseClient.addPipeline(pipelineName, pipelineConfig);
+		concourseClient.unpausePipeline(pipelineName);
+	}
+
+	public BuildStatus getStatus(String pipelineName) {
+		try {
+			Optional<Build> build = concourseClient.getLatestBuild(pipelineName, "hub-detect");
+
+			if (!build.isPresent())
+				return BuildStatus.NEVER_BUILT;
+			long buildId = Long.valueOf(build.get().getId());
+			if (StringUtils.isBlank(build.get().getEndTime())) {
+				buildMonitor.monitor(buildId);
+				return BuildStatus.IN_PROGRESS;
+			}
+			if ("succeeded".equals(build.get().getStatus())) {
+				return BuildStatus.SUCCESS;
+			} else if (buildMonitor.isInViolation(buildId)) {
+				return BuildStatus.VIOLATION;
+			} else {
+				buildMonitor.monitor(buildId);
+				return BuildStatus.FAILED;
+			}
+		} catch (CICommunicationException e) {
+			logger.error("Unable to communicate with CI", e);
+			return BuildStatus.UNKNOWN;
+		}
+	}
+
+	public void undeploy(String pipelineName) {
+		concourseClient.destroyPipeline(pipelineName);
+	}
+
+}
