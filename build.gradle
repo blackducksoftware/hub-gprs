@@ -1,0 +1,50 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.7.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+group = 'com.blackduck.hub.concourse'
+version = '0.1.0-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven {
+        url 'https://maven.repository.redhat.com/ga/'
+    	}
+}
+
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	compile('org.springframework.boot:spring-boot-starter-freemarker')
+	compile('org.springframework.boot:spring-boot-starter-security')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile("com.fasterxml.jackson.core:jackson-databind")
+	compile('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
+	
+	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.4'
+  	compile group: 'io.reactivex', name: 'rxapache-http', version: '0.21.0'
+	
+	compile 'com.google.guava:guava:23.0'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
+	compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
+	compile group: 'javax.inject', name: 'javax.inject', version: '1.0.0.redhat-6'
+	compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.2.0.RELEASE'
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+	compile group: 'com.blackducksoftware.integration', name: 'hub-common', version: '18.1.0'
+	
+	runtime('org.postgresql:postgresql')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
