@@ -16,7 +16,7 @@ echo HUB_URL=https://${hubHost}:${hubPort} > .env
 echo HUB_USERNAME=${hubUsername} >> .env
 echo HUB_PASSWORD=${hubPassword} >> .env
 
-mkdir -p keys/web keys/worker
+mkdir -p keys/web keys/worker keys/ui
 
 ssh-keygen -t rsa -f ./keys/web/tsa_host_key -N ''
 ssh-keygen -t rsa -f ./keys/web/session_signing_key -N ''
