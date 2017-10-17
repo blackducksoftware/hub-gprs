@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.7.RELEASE'
+		springBootVersion = '1.5.8.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -41,7 +41,6 @@ dependencies {
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
 	compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
 	compile group: 'javax.inject', name: 'javax.inject', version: '1.0.0.redhat-6'
-	compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.2.0.RELEASE'
 	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
 	compile group: 'com.blackducksoftware.integration', name: 'hub-common', version: '18.1.0'
 	

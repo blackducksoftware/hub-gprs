@@ -35,7 +35,7 @@ echo DB_PASSWRD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | h
 #Build UI image
 cd ..
 ./gradlew build  -x test 
-docker build . -f setup/ui_dockerfile -t blackduck/hub-scm-ui --build-arg HUB_URL="${hubHost}:${hubPort}"
+docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${hubHost}:${hubPort}"
 cd setup
 
 
