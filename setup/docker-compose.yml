@@ -18,6 +18,7 @@ services:
       blackduck.hub.url: ${HUB_URL}
       blackduck.hub.username: ${HUB_USERNAME}
       blackduck.hub.password: ${HUB_PASSWORD}
+      UI_STARTUP_OPTS: ${UI_STARTUP_OPTS}
   hub-scm-db:
     labels: 
       hub-scm:
