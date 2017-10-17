@@ -9,7 +9,7 @@ services:
     ports: ["8666:8666"]
     links: [hub-scm-db, concourse-web]
     environment: 
-      spring.datasource.url: 'jdbc:postgresql://hub-scm-db:5432/hubconcourse'
+      spring.datasource.url: 'jdbc:postgresql://hub-scm-db:5432/hub-scm'
       spring.datasource.username: blackduck
       spring.datasource.password: "${DB_PASSWRD}"
       concourse.username: concourse
@@ -23,7 +23,7 @@ services:
       hub-scm:
     image: postgres:9.5
     environment:
-      POSTGRES_DB: hubconcourse
+      POSTGRES_DB: hub-scm
       POSTGRES_USER: blackduck
       POSTGRES_PASSWORD: "${DB_PASSWRD}"
       PGDATA: /database
@@ -43,7 +43,7 @@ services:
       CONCOURSE_POSTGRES_HOST: hub-scm-db
       CONCOURSE_POSTGRES_USER: blackduck
       CONCOURSE_POSTGRES_PASSWORD: "${DB_PASSWRD}"
-      CONCOURSE_POSTGRES_DATABASE: hubconcourse
+      CONCOURSE_POSTGRES_DATABASE: hub-scm
   concourse-worker:
     labels: 
       hub-scm:

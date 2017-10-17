@@ -6,6 +6,7 @@ CONTAINERS_TO_DELETE=$(docker ps -a -f label=hub-scm -q)
 if [ ! -z "${CONTAINERS_TO_DELETE}" ]; then
     echo Shutting down Hub-SCM integration...
     docker rm -f ${CONTAINERS_TO_DELETE}
+    docker volume prune -f
 fi
 
 #Delete the built UI image.

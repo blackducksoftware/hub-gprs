@@ -48,9 +48,9 @@
 <div class="navbar">
 	<img class="navbar_logo"
 		src="/img/NewBlackDuckLogo_WhiteColor_Website.png" />
-	<h1>Login</h1>
 </div>
 <div class="page_content">
+	<h1>Login</h1>
 	<p>Please enter your Hub credentials:</p>
 	<p align="center">
 	<form action = "/login" method="POST">

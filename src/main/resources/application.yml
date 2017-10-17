@@ -1,5 +1,6 @@
 server:
   port: 8666
+  
 spring:
   datasource:
     url: jdbc:postgresql://localhost:55432/bds_hub_concourse
