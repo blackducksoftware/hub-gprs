@@ -1,4 +1,4 @@
-version: '3.1' 
+version: '3.2' 
 
 services:
   hub-scm-ui:
@@ -19,6 +19,10 @@ services:
       blackduck.hub.username: ${HUB_USERNAME}
       blackduck.hub.password: ${HUB_PASSWORD}
       UI_STARTUP_OPTS: ${UI_STARTUP_OPTS}
+    volumes:
+      - type: bind
+        source: ./keys/ui
+        target: /opt/keys
   hub-scm-db:
     labels: 
       hub-scm:
