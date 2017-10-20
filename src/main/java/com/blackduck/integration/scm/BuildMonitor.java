@@ -28,10 +28,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,22 +67,46 @@ public class BuildMonitor {
 	@Inject
 	private CiBuildDao ciBuildDao;
 
+	private ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
+
 	private Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
 
 	private Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
-	public void monitor(long ciBuildId) {
+	@PostConstruct
+	public void startMonitoring() {
+		scheduler.scheduleAtFixedRate(() -> {
+			try {
+				List<Long> activeBuilds = concourseClient.getActiveCiBuildIds();
+				this.monitor(activeBuilds);
+			} catch (Throwable t) {
+				logger.error("Error monitoring CI builds.", t);
+			}
+		}, 15, 5, TimeUnit.SECONDS);
+	}
+
+	private void monitor(List<Long> ciBuildIds) {
+		Set<Long> toMonitor = new HashSet<>(ciBuildIds);
+		// Keep from monitoring what's already monitored
 		synchronized (monitoredBuilds) {
-			//Is the build already monitored?
-			if (monitoredBuilds.contains(ciBuildId))
+			toMonitor.removeAll(monitoredBuilds);
+
+			if (toMonitor.isEmpty())
 				return;
-			// Has the build already finished?
-			boolean completed = ciBuildDao.findById(ciBuildId)
-					.map(ciBuild -> ciBuild.isFailure() || ciBuild.isSuccess() || ciBuild.isViolation()).orElse(false);
-			if (completed)
-				return;
-			monitoredBuilds.add(ciBuildId);
+
+			// Omit builds that are already completed
+			Iterable<CiBuild> completedBuilds = ciBuildDao.findByIds(toMonitor);
+			Set<Long> completedCiBuildIds = StreamSupport.stream(completedBuilds.spliterator(), false)
+					.map(CiBuild::getId).collect(Collectors.toSet());
+			toMonitor.removeAll(completedCiBuildIds);
+			monitoredBuilds.addAll(toMonitor);
 		}
+
+		toMonitor.forEach(this::startObservingBuildEvents);
+
+	}
+
+	private void startObservingBuildEvents(long ciBuildId) {
 		Observable<BuildEvent> eventObservable = concourseClient.observeBuildEvents(ciBuildId)
 				.doOnCompleted(() -> processBuildCompletion(ciBuildId));
 
@@ -115,11 +148,12 @@ public class BuildMonitor {
 					}
 				}
 			}
-
-			try (Writer writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.APPEND)) {
-				writer.write(event.getData().getPayload());
-			} catch (Throwable t) {
-				logger.error("Unable to write build log " + buildId, t);
+			if (event.getData() != null) {
+				try (Writer writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.APPEND)) {
+					writer.write(event.getData().getPayload());
+				} catch (Throwable t) {
+					logger.error("Unable to write build log " + buildId, t);
+				}
 			}
 		}
 	}

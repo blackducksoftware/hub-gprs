@@ -77,6 +77,7 @@ public class DeploymentService {
 		concourseClient.unpausePipeline(pipelineName);
 	}
 
+	//TODO: Eliminate duplication with BuildMonitor
 	public BuildStatus getStatus(String pipelineName) {
 		try {
 			Optional<Build> concourseBuild = concourseClient.getLatestBuild(pipelineName, "hub-detect");
@@ -85,7 +86,6 @@ public class DeploymentService {
 				return BuildStatus.NEVER_BUILT;
 			long concourseBuildId = Long.valueOf(concourseBuild.get().getId());
 			if (StringUtils.isBlank(concourseBuild.get().getEndTime())) {
-				buildMonitor.monitor(concourseBuildId);
 				return BuildStatus.IN_PROGRESS;
 			}
 			if ("succeeded".equals(concourseBuild.get().getStatus())) {
@@ -93,7 +93,6 @@ public class DeploymentService {
 			} else if (buildMonitor.isInViolation(concourseBuildId)) {
 				return BuildStatus.VIOLATION;
 			} else {
-				buildMonitor.monitor(concourseBuildId);
 				return BuildStatus.FAILED;
 			}
 		} catch (CICommunicationException e) {

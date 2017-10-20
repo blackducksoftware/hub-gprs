@@ -1,5 +1,6 @@
 package com.blackduck.integration.scm.dao;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -19,6 +20,14 @@ public class CiBuildDao {
 		return Optional.ofNullable(ciBuildRepository.findOne(id));
 	}
 
+	
+	public Iterable<CiBuild> findByIds(Iterable<Long> ids) {
+		Iterable<CiBuild> found = ciBuildRepository.findAll(ids);
+		if (found ==null) found = Collections.emptyList();
+		return found;
+		
+	}
+	
 	public void markViolation(long ciBuildId) {
 		CiBuild ciBuild = findOrScaffold(ciBuildId);
 		ciBuild.setViolation(true);

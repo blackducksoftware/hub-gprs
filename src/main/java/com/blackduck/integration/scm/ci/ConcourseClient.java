@@ -24,9 +24,16 @@ package com.blackduck.integration.scm.ci;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -64,6 +71,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.blackduck.integration.scm.ApplicationConfiguration;
+import com.blackduck.integration.scm.entity.CiBuild;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,11 +88,10 @@ public class ConcourseClient {
 
 	@Inject
 	private ApplicationConfiguration applicationConfiguration;
-	
+
 	RestTemplate restTemplate = new RestTemplate();
 	String baseUrl;
 	private HttpAsyncClient asyncClient;
-
 
 	private enum ExpiringMapKey {
 		INSTANCE;
@@ -137,7 +144,9 @@ public class ConcourseClient {
 	private String getToken() {
 		return expiringTokenStore.computeIfAbsent(ExpiringMapKey.INSTANCE, (key) -> {
 			RestTemplate basicAuthTemplate = new RestTemplateBuilder()
-					.basicAuthorization(applicationConfiguration.getConcourseUsername(), applicationConfiguration.getConcoursePassword()).defaultMessageConverters().build();
+					.basicAuthorization(applicationConfiguration.getConcourseUsername(),
+							applicationConfiguration.getConcoursePassword())
+					.defaultMessageConverters().build();
 			// TODO: Parametrize team name.
 
 			ResponseEntity<AuthToken> response = basicAuthTemplate.getForEntity(baseUrl + "/auth/token",
@@ -156,7 +165,6 @@ public class ConcourseClient {
 		});
 	}
 
-	
 	public List<Pipeline> getPipelineNames() {
 		ResponseEntity<List<Pipeline>> response = restTemplate.exchange(baseUrl + "/pipelines", HttpMethod.GET, null,
 				new ParameterizedTypeReference<List<Pipeline>>() {
@@ -165,6 +173,24 @@ public class ConcourseClient {
 			return response.getBody();
 		else
 			throw new CICommunicationException(response.getStatusCode());
+	}
+
+	/**
+	 * Returns a list of Concourse build IDs that are currently in progress
+	 * 
+	 * @return
+	 */
+	public List<Long> getActiveCiBuildIds() {
+		ResponseEntity<String> responseFromCi = restTemplate
+				.getForEntity(applicationConfiguration.getConcourseUrl() + "/api/v1/builds?limit=100000", String.class);
+		if (responseFromCi.getStatusCode().is2xxSuccessful()) {
+			return deserializeBuilds(responseFromCi.getBody())
+					//Active builds only
+					.filter(puild -> StringUtils.isBlank(puild.getEndTime()))
+					//Return IDs
+					.map(Build::getId).map(Long::parseLong).collect(Collectors.toList());
+		} else throw new CICommunicationException(responseFromCi.getStatusCode());
+
 	}
 
 	public void addPipeline(String pipelineName, String pipelineConfig) {
@@ -232,17 +258,32 @@ public class ConcourseClient {
 			throw new CICommunicationException(response.getStatusCode());
 		}
 	}
-	
-	public Observable<BuildEvent> observeBuildEvents(long buildId){
-		String uri = applicationConfiguration.getConcourseUrl() + "/api/v1/builds/" + Long.toString(buildId) + "/events";
 
-		return ObservableHttp.createGet(uri, asyncClient).toObservable()
-				.flatMap(ObservableHttpResponse::getContent).map(String::new)
-				.takeWhile(text -> !"event: end".equals(text))
+	private Stream<Build> deserializeBuilds(String buildListJson) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			Iterator<Build> buildIterator = mapper.readerFor(Build.class).readValues(buildListJson);
+			if (!buildIterator.hasNext())
+				return Stream.empty();
+			else {
+				return StreamSupport.stream(Spliterators.spliteratorUnknownSize(buildIterator, Spliterator.ORDERED),
+						false);
+			}
+		} catch (IOException e) {
+			throw new CICommunicationException("Unable to parse build list");
+		}
+	}
+
+	public Observable<BuildEvent> observeBuildEvents(long buildId) {
+		String uri = applicationConfiguration.getConcourseUrl() + "/api/v1/builds/" + Long.toString(buildId)
+				+ "/events";
+
+		return ObservableHttp.createGet(uri, asyncClient).toObservable().flatMap(ObservableHttpResponse::getContent)
+				.map(String::new).takeWhile(text -> !"event: end".equals(text))
 				.filter(text -> StringUtils.startsWith(text, "data:"))
 				.map(text -> StringUtils.substringAfter(text, "data:")).map(ConcourseClient::deserializeBuildEvent);
 	}
-	
+
 	private static BuildEvent deserializeBuildEvent(String data) {
 		try (JsonParser parser = new JsonFactory().createParser(data)) {
 			return new ObjectMapper().readValue(data.getBytes(), BuildEvent.class);

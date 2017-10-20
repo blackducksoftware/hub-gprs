@@ -38,13 +38,16 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 @Entity
+@Table(indexes = { @Index(columnList = "id,pipeline") })
 public class Build {
 	@Id
 	@GeneratedValue(generator = "seq_build_id", strategy = GenerationType.SEQUENCE)
@@ -52,24 +55,25 @@ public class Build {
 	private long id;
 
 	@Enumerated
-	@Column(nullable=false)
+	@Column(nullable = false)
 	private BuildType buildType;
 
 	private String buildCommand;
-	
-	@Column(nullable=false)
+
+	@Column(nullable = false)
 	private String image;
-	
-	@Column(nullable=false)
+
+	@Column(nullable = false)
 	private String imageTag;
-	
-	@ManyToOne(fetch=FetchType.EAGER)
+
+	@ManyToOne(fetch = FetchType.EAGER)
 	private Source source;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	Date createdOn;
 
 	@Nullable
+	@Column(nullable = false, unique = true)
 	private String pipeline;
 
 	public long getId() {
@@ -96,7 +100,6 @@ public class Build {
 		this.buildCommand = buildCommand;
 	}
 
-
 	public String getPipeline() {
 		return pipeline;
 	}
@@ -112,27 +115,27 @@ public class Build {
 	public void setCreatedOn(Date createdOn) {
 		this.createdOn = createdOn;
 	}
-	
+
 	public Source getSource() {
 		return source;
 	}
-	
+
 	public void setSource(Source source) {
 		this.source = source;
 	}
-	
+
 	public String getImage() {
 		return image;
 	}
-	
+
 	public void setImage(String image) {
 		this.image = image;
 	}
-	
+
 	public String getImageTag() {
 		return imageTag;
 	}
-	
+
 	public void setImageTag(String imageTag) {
 		this.imageTag = imageTag;
 	}
@@ -147,8 +150,6 @@ public class Build {
 	public void setProperties(Properties secrets) {
 		this.properties = secrets;
 	}
-	
-	
 
 	/**
 	 * Returns a user-friendly name of this repository/build
@@ -162,7 +163,7 @@ public class Build {
 	}
 
 	@Access(AccessType.PROPERTY)
-	@Column(name = "properties", columnDefinition="text")
+	@Column(name = "properties", columnDefinition = "text")
 	public String getPropertiesAsText() {
 		try (StringWriter out = new StringWriter()) {
 			this.properties.store(out, null);
