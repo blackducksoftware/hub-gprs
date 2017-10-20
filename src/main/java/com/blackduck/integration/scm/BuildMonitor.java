@@ -34,7 +34,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +41,8 @@ import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.ci.BuildEvent;
 import com.blackduck.integration.scm.ci.ConcourseClient;
+import com.blackduck.integration.scm.dao.CiBuildDao;
+import com.blackduck.integration.scm.entity.CiBuild;
 
 import rx.Observable;
 
@@ -54,43 +55,46 @@ public class BuildMonitor {
 	@Inject
 	private ApplicationConfiguration applicationConfiguration;
 
+	@Inject
+	private CiBuildDao ciBuildDao;
+
 	private Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
 
-	//TODO: Persist the list of completed builds
-	private Set<Long> buildsInViolation = Collections.synchronizedSet(new HashSet<>());
-	private Set<Long> completedBuilds = Collections.synchronizedSet(new HashSet<>());
 	private Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
-	public void monitor(long buildId) {
+	public void monitor(long ciBuildId) {
 		synchronized (monitoredBuilds) {
-			if (monitoredBuilds.contains(buildId) || buildsInViolation.contains(buildId) || completedBuilds.contains(buildId)) {
+			//Is the build already monitored?
+			if (monitoredBuilds.contains(ciBuildId))
 				return;
-			}
-			monitoredBuilds.add(buildId);
+			// Has the build already finished?
+			boolean completed = ciBuildDao.findById(ciBuildId)
+					.map(ciBuild -> ciBuild.isFailure() || ciBuild.isSuccess() || ciBuild.isViolation()).orElse(false);
+			if (completed)
+				return;
+			monitoredBuilds.add(ciBuildId);
 		}
-		Observable<BuildEvent> eventObservable = concourseClient.observeBuildEvents(buildId)
-				.doOnCompleted(() -> processBuildCompletion(buildId));
+		Observable<BuildEvent> eventObservable = concourseClient.observeBuildEvents(ciBuildId)
+				.doOnCompleted(() -> processBuildCompletion(ciBuildId));
 
-		eventObservable.forEach(received -> processEventUpdate(buildId, received));
+		eventObservable.forEach(received -> processEventUpdate(ciBuildId, received));
 	}
 
-	private void processEventUpdate(long buildId, BuildEvent event) {
+	private void processEventUpdate(long ciBuildId, BuildEvent event) {
 		String payload = event.getData() != null ? event.getData().getPayload() : "";
-		updateBuildLog(buildId, event);
+		updateBuildLog(ciBuildId, event);
 		if (StringUtils.contains(payload, "Policy Status: IN_VIOLATION")) {
-			buildsInViolation.add(buildId);
+			ciBuildDao.markViolation(ciBuildId);
 		}
 	}
-	
+
 	private void processBuildCompletion(long buildId) {
-		if (!buildsInViolation.contains(buildId)) {
-			completedBuilds.add(buildId);
-		}
+		ciBuildDao.recordCompletion(buildId);
 		monitoredBuilds.remove(buildId);
 	}
 
 	public boolean isInViolation(long buildId) {
-		return buildsInViolation.contains(buildId);
+		return ciBuildDao.findById(buildId).map(CiBuild::isViolation).orElse(false);
 	}
 
 	private void updateBuildLog(long buildId, BuildEvent event) {
