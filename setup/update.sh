@@ -20,4 +20,4 @@ cd ..
 docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${UNPREFIXED_URL}"
 cd setup
 
-
+./startup.sh
