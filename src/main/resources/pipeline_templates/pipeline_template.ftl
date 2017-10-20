@@ -18,7 +18,7 @@
 					"uri" : "git@${address}:${Repository}.git",
 					</#if>
 				<#elseIf address?hasContent>
-				"uri" : "${address}/${Repository}",
+				"uri" : "https://${address}/${Repository}",
 				</#if>
 				"repo": "${Repository}"
 			},
