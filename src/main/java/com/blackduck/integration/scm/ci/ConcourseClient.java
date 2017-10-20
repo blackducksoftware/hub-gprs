@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +63,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.blackduck.integration.scm.ApplicationConfiguration;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,18 +78,13 @@ public class ConcourseClient {
 
 	private static Logger logger = LoggerFactory.getLogger(ConcourseClient.class);
 
+	@Inject
+	private ApplicationConfiguration applicationConfiguration;
+	
 	RestTemplate restTemplate = new RestTemplate();
 	String baseUrl;
 	private HttpAsyncClient asyncClient;
 
-	@Value("${concourse.url}")
-	private String concourseUrl;
-
-	@Value("${concourse.username}")
-	private String concourseUsername;
-
-	@Value("${concourse.password}")
-	private String concoursePassword;
 
 	private enum ExpiringMapKey {
 		INSTANCE;
@@ -127,7 +124,7 @@ public class ConcourseClient {
 
 	@PostConstruct
 	private void setup() {
-		this.baseUrl = concourseUrl + "/api/v1/teams/main";
+		this.baseUrl = applicationConfiguration.getConcourseUrl() + "/api/v1/teams/main";
 	}
 
 	/**
@@ -140,7 +137,7 @@ public class ConcourseClient {
 	private String getToken() {
 		return expiringTokenStore.computeIfAbsent(ExpiringMapKey.INSTANCE, (key) -> {
 			RestTemplate basicAuthTemplate = new RestTemplateBuilder()
-					.basicAuthorization(concourseUsername, concoursePassword).defaultMessageConverters().build();
+					.basicAuthorization(applicationConfiguration.getConcourseUsername(), applicationConfiguration.getConcoursePassword()).defaultMessageConverters().build();
 			// TODO: Parametrize team name.
 
 			ResponseEntity<AuthToken> response = basicAuthTemplate.getForEntity(baseUrl + "/auth/token",
@@ -237,7 +234,7 @@ public class ConcourseClient {
 	}
 	
 	public Observable<BuildEvent> observeBuildEvents(long buildId){
-		String uri = concourseUrl + "/api/v1/builds/" + Long.toString(buildId) + "/events";
+		String uri = applicationConfiguration.getConcourseUrl() + "/api/v1/builds/" + Long.toString(buildId) + "/events";
 
 		return ObservableHttp.createGet(uri, asyncClient).toObservable()
 				.flatMap(ObservableHttpResponse::getContent).map(String::new)

@@ -22,6 +22,10 @@
 
 package com.blackduck.integration.scm;
 
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +33,8 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.ci.BuildEvent;
@@ -42,7 +48,12 @@ public class BuildMonitor {
 
 	@Inject
 	private ConcourseClient concourseClient;
+	
+	@Inject
+	private ApplicationConfiguration applicationConfiguration;
 
+	private Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
+	
 	private Set<Long> buildsInViolation = Collections.synchronizedSet(new HashSet<>());
 	private Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
@@ -61,6 +72,7 @@ public class BuildMonitor {
 
 	private void processEventUpdate(long buildId,  BuildEvent event) {
 		String payload = event.getData() != null ? event.getData().getPayload() : "";
+		updateBuildLog(buildId, event);
 		if (StringUtils.contains(payload, "Policy Status: IN_VIOLATION")) {
 			buildsInViolation.add(buildId);
 		}
@@ -70,4 +82,14 @@ public class BuildMonitor {
 		return buildsInViolation.contains(buildId);
 	}
 
+	private void updateBuildLog(long buildId, BuildEvent event){
+		if (StringUtils.isNotBlank(applicationConfiguration.getBuildLogDirectory())){
+			try(Writer writer = Files.newBufferedWriter(Paths.get(applicationConfiguration.getBuildLogDirectory(), Long.toString(buildId)+".log"),StandardOpenOption.APPEND)){
+				writer.write(event.getData().getEvent()+": "+ event.getData().getPayload());
+			}catch (Throwable t){
+				logger.error("Unable to write build log "+buildId, t);
+			}
+		}
+	}
+	
 }
