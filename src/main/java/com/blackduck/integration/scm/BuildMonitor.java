@@ -22,8 +22,10 @@
 
 package com.blackduck.integration.scm;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,35 +45,36 @@ import com.blackduck.integration.scm.ci.ConcourseClient;
 
 import rx.Observable;
 
-
 @Component
 public class BuildMonitor {
 
 	@Inject
 	private ConcourseClient concourseClient;
-	
+
 	@Inject
 	private ApplicationConfiguration applicationConfiguration;
 
 	private Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
-	
+
+	//TODO: Persist the list of completed builds
 	private Set<Long> buildsInViolation = Collections.synchronizedSet(new HashSet<>());
+	private Set<Long> completedBuilds = Collections.synchronizedSet(new HashSet<>());
 	private Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
 	public void monitor(long buildId) {
 		synchronized (monitoredBuilds) {
-			if (monitoredBuilds.contains(buildId) || buildsInViolation.contains(buildId)) {
+			if (monitoredBuilds.contains(buildId) || buildsInViolation.contains(buildId) || completedBuilds.contains(buildId)) {
 				return;
 			}
 			monitoredBuilds.add(buildId);
 		}
 		Observable<BuildEvent> eventObservable = concourseClient.observeBuildEvents(buildId)
-				.doOnCompleted(()->monitoredBuilds.remove(buildId));
-			
+				.doOnCompleted(() -> processBuildCompletion(buildId));
+
 		eventObservable.forEach(received -> processEventUpdate(buildId, received));
 	}
 
-	private void processEventUpdate(long buildId,  BuildEvent event) {
+	private void processEventUpdate(long buildId, BuildEvent event) {
 		String payload = event.getData() != null ? event.getData().getPayload() : "";
 		updateBuildLog(buildId, event);
 		if (StringUtils.contains(payload, "Policy Status: IN_VIOLATION")) {
@@ -78,18 +82,42 @@ public class BuildMonitor {
 		}
 	}
 	
+	private void processBuildCompletion(long buildId) {
+		if (!buildsInViolation.contains(buildId)) {
+			completedBuilds.add(buildId);
+		}
+		monitoredBuilds.remove(buildId);
+	}
+
 	public boolean isInViolation(long buildId) {
 		return buildsInViolation.contains(buildId);
 	}
 
-	private void updateBuildLog(long buildId, BuildEvent event){
-		if (StringUtils.isNotBlank(applicationConfiguration.getBuildLogDirectory())){
-			try(Writer writer = Files.newBufferedWriter(Paths.get(applicationConfiguration.getBuildLogDirectory(), Long.toString(buildId)+".log"),StandardOpenOption.APPEND)){
-				writer.write(event.getData().getEvent()+": "+ event.getData().getPayload());
-			}catch (Throwable t){
-				logger.error("Unable to write build log "+buildId, t);
+	private void updateBuildLog(long buildId, BuildEvent event) {
+		if (StringUtils.isNotBlank(applicationConfiguration.getBuildLogDirectory())) {
+
+			Path logFilePath = Paths.get(applicationConfiguration.getBuildLogDirectory(),
+					Long.toString(buildId) + ".log");
+			// Should we create the file?
+			if (!Files.exists(logFilePath)) {
+				// Double-check synchronously before creating a new file!
+				synchronized (this) {
+					if (!Files.exists(logFilePath)) {
+						try {
+							Files.createFile(logFilePath);
+						} catch (IOException ioe) {
+							logger.error("Unable to create file for build log: " + logFilePath.toString());
+						}
+					}
+				}
+			}
+
+			try (Writer writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.APPEND)) {
+				writer.write(event.getData().getPayload());
+			} catch (Throwable t) {
+				logger.error("Unable to write build log " + buildId, t);
 			}
 		}
 	}
-	
+
 }
