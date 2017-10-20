@@ -77,23 +77,22 @@ public class DeploymentService {
 		concourseClient.unpausePipeline(pipelineName);
 	}
 
+	//TODO: Eliminate duplication with BuildMonitor
 	public BuildStatus getStatus(String pipelineName) {
 		try {
-			Optional<Build> build = concourseClient.getLatestBuild(pipelineName, "hub-detect");
+			Optional<Build> concourseBuild = concourseClient.getLatestBuild(pipelineName, "hub-detect");
 
-			if (!build.isPresent())
+			if (!concourseBuild.isPresent())
 				return BuildStatus.NEVER_BUILT;
-			long buildId = Long.valueOf(build.get().getId());
-			if (StringUtils.isBlank(build.get().getEndTime())) {
-				buildMonitor.monitor(buildId);
+			long concourseBuildId = Long.valueOf(concourseBuild.get().getId());
+			if (StringUtils.isBlank(concourseBuild.get().getEndTime())) {
 				return BuildStatus.IN_PROGRESS;
 			}
-			if ("succeeded".equals(build.get().getStatus())) {
+			if ("succeeded".equals(concourseBuild.get().getStatus())) {
 				return BuildStatus.SUCCESS;
-			} else if (buildMonitor.isInViolation(buildId)) {
+			} else if (buildMonitor.isInViolation(concourseBuildId)) {
 				return BuildStatus.VIOLATION;
 			} else {
-				buildMonitor.monitor(buildId);
 				return BuildStatus.FAILED;
 			}
 		} catch (CICommunicationException e) {

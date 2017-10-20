@@ -37,6 +37,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.HttpTrace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -67,6 +69,8 @@ import com.google.common.collect.Streams;
 @Controller
 public class BuildController {
 
+	private static final Logger logger = LoggerFactory.getLogger(BuildController.class);
+
 	@Inject
 	private DeploymentService deploymentService;
 
@@ -80,9 +84,9 @@ public class BuildController {
 	public String editBuildView(Model model) {
 		model.addAttribute("buildTypes", BuildType.values());
 		model.addAttribute("sources", sourceDao.list());
-		
-		List<ParamDefinition> buildParams = Stream.of(SourceType.values()).flatMap(type -> type.getBuildParameterDefinitions().stream())
-				.collect(Collectors.toList());
+
+		List<ParamDefinition> buildParams = Stream.of(SourceType.values())
+				.flatMap(type -> type.getBuildParameterDefinitions().stream()).collect(Collectors.toList());
 		model.addAttribute("allBuildParams", buildParams);
 		return "build";
 	}
@@ -132,10 +136,10 @@ public class BuildController {
 		model.addAttribute("build", build);
 		return editBuildView(model);
 	}
-	
+
 	@GetMapping("/builds/{id}/status")
 	@ResponseBody
-	public ResponseEntity<String> getBuildStatus(@PathVariable long id){
+	public ResponseEntity<String> getBuildStatus(@PathVariable long id) {
 		Build build = buildDao.findById(id);
 		if (build == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -143,7 +147,6 @@ public class BuildController {
 		BuildStatus status = deploymentService.getStatus(build.getPipeline());
 		return new ResponseEntity<String>(status.toString(), HttpStatus.OK);
 	}
-
 
 	@PreAuthorize("ROLE_codescanner")
 	@PutMapping("/builds/{id}")
@@ -181,20 +184,23 @@ public class BuildController {
 	@Transactional
 	public ResponseEntity<String> deleteById(@PathVariable long id) {
 		Build build = buildDao.findById(id);
-		deploymentService.undeploy(build.getPipeline());
+		try {
+			deploymentService.undeploy(build.getPipeline());
+		} catch (Throwable t) {
+			logger.error("Unable to undeploy pipeline " + build.getPipeline() + " (build " + id + ")", t);
+		}
 		buildDao.deleteById(id);
 		return new ResponseEntity<String>("{}", HttpStatus.NO_CONTENT);
 	}
-	
-	
+
 	@ExceptionHandler(Exception.class)
 	public ModelAndView handleException(HttpServletRequest req, Exception ex) {
-			ModelAndView mav = new ModelAndView("error");
-			mav.addObject("hideNavbar", "true");
-			mav.addObject("exception", ex);
-			mav.addObject("error", ex.getClass().getSimpleName());
-			mav.addObject("message", ex.getMessage());
-			return mav;
+		ModelAndView mav = new ModelAndView("error");
+		mav.addObject("hideNavbar", "true");
+		mav.addObject("exception", ex);
+		mav.addObject("error", ex.getClass().getSimpleName());
+		mav.addObject("message", ex.getMessage());
+		return mav;
 	}
 
 	/**
@@ -207,7 +213,8 @@ public class BuildController {
 	 */
 	private Map<String, String> extractParams(Source source, BuildType buildType, Map<String, String> values) {
 
-		Stream<ParamDefinition> allRequiredParamNames = Streams.concat(source.getType().getSourceParameterDefinitions().stream(),
+		Stream<ParamDefinition> allRequiredParamNames = Streams.concat(
+				source.getType().getSourceParameterDefinitions().stream(),
 				source.getType().getBuildParameterDefinitions().stream(), buildType.getParams().stream());
 
 		return allRequiredParamNames
@@ -228,7 +235,7 @@ public class BuildController {
 	}
 
 	private String sanitizeParamValue(String param) {
-		String[] toReplace = new String[] {"'" , "\"" };
+		String[] toReplace = new String[] { "'", "\"" };
 		String[] replacements = new String[toReplace.length];
 		Arrays.fill(replacements, "_");
 		return StringUtils.replaceEach(param, toReplace, replacements);

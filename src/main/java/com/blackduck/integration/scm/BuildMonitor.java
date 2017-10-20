@@ -22,20 +22,38 @@
 
 package com.blackduck.integration.scm;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.ci.BuildEvent;
 import com.blackduck.integration.scm.ci.ConcourseClient;
+import com.blackduck.integration.scm.dao.CiBuildDao;
+import com.blackduck.integration.scm.entity.CiBuild;
 
 import rx.Observable;
-
 
 @Component
 public class BuildMonitor {
@@ -43,31 +61,101 @@ public class BuildMonitor {
 	@Inject
 	private ConcourseClient concourseClient;
 
-	private Set<Long> buildsInViolation = Collections.synchronizedSet(new HashSet<>());
+	@Inject
+	private ApplicationConfiguration applicationConfiguration;
+
+	@Inject
+	private CiBuildDao ciBuildDao;
+
+	private ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
+
+	private Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
+
 	private Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
-	public void monitor(long buildId) {
-		synchronized (monitoredBuilds) {
-			if (monitoredBuilds.contains(buildId) || buildsInViolation.contains(buildId)) {
-				return;
+	@PostConstruct
+	public void startMonitoring() {
+		scheduler.scheduleAtFixedRate(() -> {
+			try {
+				List<Long> activeBuilds = concourseClient.getActiveCiBuildIds();
+				this.monitor(activeBuilds);
+			} catch (Throwable t) {
+				logger.error("Error monitoring CI builds.", t);
 			}
-			monitoredBuilds.add(buildId);
-		}
-		Observable<BuildEvent> eventObservable = concourseClient.observeBuildEvents(buildId)
-				.doOnCompleted(()->monitoredBuilds.remove(buildId));
-			
-		eventObservable.forEach(received -> processEventUpdate(buildId, received));
+		}, 15, 5, TimeUnit.SECONDS);
 	}
 
-	private void processEventUpdate(long buildId,  BuildEvent event) {
+	private void monitor(List<Long> ciBuildIds) {
+		Set<Long> toMonitor = new HashSet<>(ciBuildIds);
+		// Keep from monitoring what's already monitored
+		synchronized (monitoredBuilds) {
+			toMonitor.removeAll(monitoredBuilds);
+
+			if (toMonitor.isEmpty())
+				return;
+
+			// Omit builds that are already completed
+			Iterable<CiBuild> completedBuilds = ciBuildDao.findByIds(toMonitor);
+			Set<Long> completedCiBuildIds = StreamSupport.stream(completedBuilds.spliterator(), false)
+					.map(CiBuild::getId).collect(Collectors.toSet());
+			toMonitor.removeAll(completedCiBuildIds);
+			monitoredBuilds.addAll(toMonitor);
+		}
+
+		toMonitor.forEach(this::startObservingBuildEvents);
+
+	}
+
+	private void startObservingBuildEvents(long ciBuildId) {
+		Observable<BuildEvent> eventObservable = concourseClient.observeBuildEvents(ciBuildId)
+				.doOnCompleted(() -> processBuildCompletion(ciBuildId));
+
+		eventObservable.forEach(received -> processEventUpdate(ciBuildId, received));
+	}
+
+	private void processEventUpdate(long ciBuildId, BuildEvent event) {
 		String payload = event.getData() != null ? event.getData().getPayload() : "";
+		updateBuildLog(ciBuildId, event);
 		if (StringUtils.contains(payload, "Policy Status: IN_VIOLATION")) {
-			buildsInViolation.add(buildId);
+			ciBuildDao.markViolation(ciBuildId);
 		}
 	}
-	
+
+	private void processBuildCompletion(long buildId) {
+		ciBuildDao.recordCompletion(buildId);
+		monitoredBuilds.remove(buildId);
+	}
+
 	public boolean isInViolation(long buildId) {
-		return buildsInViolation.contains(buildId);
+		return ciBuildDao.findById(buildId).map(CiBuild::isViolation).orElse(false);
+	}
+
+	private void updateBuildLog(long buildId, BuildEvent event) {
+		if (StringUtils.isNotBlank(applicationConfiguration.getBuildLogDirectory())) {
+
+			Path logFilePath = Paths.get(applicationConfiguration.getBuildLogDirectory(),
+					Long.toString(buildId) + ".log");
+			// Should we create the file?
+			if (!Files.exists(logFilePath)) {
+				// Double-check synchronously before creating a new file!
+				synchronized (this) {
+					if (!Files.exists(logFilePath)) {
+						try {
+							Files.createFile(logFilePath);
+						} catch (IOException ioe) {
+							logger.error("Unable to create file for build log: " + logFilePath.toString());
+						}
+					}
+				}
+			}
+			if (event.getData() != null) {
+				try (Writer writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.APPEND)) {
+					writer.write(event.getData().getPayload());
+				} catch (Throwable t) {
+					logger.error("Unable to write build log " + buildId, t);
+				}
+			}
+		}
 	}
 
 }
