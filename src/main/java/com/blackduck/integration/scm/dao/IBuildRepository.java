@@ -29,7 +29,6 @@ import org.springframework.stereotype.Repository;
 
 import com.blackduck.integration.scm.entity.Build;
 
-@Repository
 public interface IBuildRepository extends CrudRepository<Build, Long>{
 	Stream<Build> findBySourceId(long sourceId);
 }

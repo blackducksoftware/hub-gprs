@@ -28,25 +28,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.ci.BuildEvent;
 import com.blackduck.integration.scm.ci.ConcourseClient;
@@ -55,25 +52,26 @@ import com.blackduck.integration.scm.entity.CiBuild;
 
 import rx.Observable;
 
-@Component
 public class BuildMonitor {
 
-	@Inject
-	private ConcourseClient concourseClient;
+	private final ConcourseClient concourseClient;
 
-	@Inject
-	private ApplicationConfiguration applicationConfiguration;
+	private final CiBuildDao ciBuildDao;
 
-	@Inject
-	private CiBuildDao ciBuildDao;
+	private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
 
-	private ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
+	private final Optional<String> buildLogDirectory;
 
-	private Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
+	private static final Logger logger = LoggerFactory.getLogger(BuildMonitor.class);
 
-	private Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
+	private final Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
-	@PostConstruct
+	public BuildMonitor(ConcourseClient concourseClient, CiBuildDao ciBuildDao, Optional<String> buildLogDirectory) {
+		this.ciBuildDao = ciBuildDao;
+		this.concourseClient = concourseClient;
+		this.buildLogDirectory = buildLogDirectory;
+	}
+
 	public void startMonitoring() {
 		scheduler.scheduleAtFixedRate(() -> {
 			try {
@@ -131,10 +129,9 @@ public class BuildMonitor {
 	}
 
 	private void updateBuildLog(long buildId, BuildEvent event) {
-		if (StringUtils.isNotBlank(applicationConfiguration.getBuildLogDirectory())) {
+		if (buildLogDirectory.isPresent()) {
 
-			Path logFilePath = Paths.get(applicationConfiguration.getBuildLogDirectory(),
-					Long.toString(buildId) + ".log");
+			Path logFilePath = Paths.get(buildLogDirectory.get(), Long.toString(buildId) + ".log");
 			// Should we create the file?
 			if (!Files.exists(logFilePath)) {
 				// Double-check synchronously before creating a new file!

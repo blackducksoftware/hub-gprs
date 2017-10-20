@@ -31,11 +31,13 @@ import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.entity.Source;
 
-@Component
 public class SourceDao {
 
-	@Inject
-	private ISourceRepository sourceRepository;
+	private final ISourceRepository sourceRepository;
+	
+	public SourceDao(ISourceRepository sourceRepository) {
+		this.sourceRepository = sourceRepository;
+	}
 
 	/**
 	 * Returns a Source with the specified ID or null if not found

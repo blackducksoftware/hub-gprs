@@ -29,7 +29,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Defines a type of SC.
+ * Defines a type of SCM.
  * @author ybronshteyn
  *
  */

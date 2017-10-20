@@ -10,11 +10,18 @@ import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.entity.CiBuild;
 
-@Component
+/**
+ * Persists information about outcomes of CI builds
+ * @author ybronshteyn
+ *
+ */
 public class CiBuildDao {
 
-	@Inject
-	private ICiBuildRepository ciBuildRepository;
+	private final ICiBuildRepository ciBuildRepository;
+	
+	public CiBuildDao(ICiBuildRepository ciBuildRepository) {
+		this.ciBuildRepository = ciBuildRepository;
+	}
 
 	public Optional<CiBuild> findById(long id) {
 		return Optional.ofNullable(ciBuildRepository.findOne(id));
