@@ -4,6 +4,7 @@ services:
   hub-scm-ui:
     labels: 
       hub-scm:
+      hub-scm-ui:
     image: blackducksoftware/hub-scm-ui
     depends_on: [hub-scm-db, concourse-web]
     ports: ["8666:8666"]
@@ -18,11 +19,15 @@ services:
       blackduck.hub.url: ${HUB_URL}
       blackduck.hub.username: ${HUB_USERNAME}
       blackduck.hub.password: ${HUB_PASSWORD}
+      debug.buildLogDirectory: ${HUB_SCM_BUILD_LOG_DIR}
       UI_STARTUP_OPTS: ${UI_STARTUP_OPTS}
     volumes:
       - type: bind
         source: ./keys/ui
         target: /opt/keys
+      - type: bind
+        source: ${HUB_SCM_BUILD_LOG_DIR}
+        target: ${HUB_SCM_BUILD_LOG_DIR}
   hub-scm-db:
     labels: 
       hub-scm:
