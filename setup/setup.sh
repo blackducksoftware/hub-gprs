@@ -1,4 +1,15 @@
 #!/bin/bash
+if [ -z "$JAVA_HOME" ]; then
+    echo "JAVA_HOME is not set. Please set it to the location of your JDK."
+    exit 127
+fi
+
+"${JAVA_HOME}"/bin/javac -version
+if [ $? -ne 0 ]; then
+    echo "Unable to run find javac at ${JAVA_HOME}/bin/javac. Please make sure your JAVA_HOME is set to your JDK (not JRE) location".
+    exit 127
+fi
+
 echo -n "Enter the hostname of your HUB installation and press [ENTER]: "
 read hubHost
 
