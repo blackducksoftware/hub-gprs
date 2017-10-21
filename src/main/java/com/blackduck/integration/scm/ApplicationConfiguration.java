@@ -9,8 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.ci.ConcourseConfiguration;
 import com.blackduck.integration.scm.dao.PersistanceConfiguration;
@@ -20,6 +18,15 @@ public class ApplicationConfiguration {
 
 	@Value("${debug.buildLogDirectory}")
 	private String buildLogDirectory;
+	
+	@Value("${blackduck.hub.url}")
+	private String hubUrl;
+	
+	@Value("${blackduck.hub.username}")
+	private String hubUsername;
+	
+	@Value("${blackduck.hub.password}")
+	private String hubPassword;
 	
 	@Inject
 	private ConcourseConfiguration concourseConfiguration;
@@ -35,6 +42,11 @@ public class ApplicationConfiguration {
 	@Bean(initMethod="startMonitoring")
 	private BuildMonitor buildMonitor() {
 		return new BuildMonitor(concourseConfiguration.concourseClient(), persistanceConfiguration.ciBuildDao(), getBuildLogDirectory());
+	}
+	
+	@Bean
+	private DeploymentService deploymentService() {
+		return new DeploymentService(concourseConfiguration.concourseClient(), this.buildMonitor(), hubUrl, hubUsername, hubPassword);
 	}
 
 }
