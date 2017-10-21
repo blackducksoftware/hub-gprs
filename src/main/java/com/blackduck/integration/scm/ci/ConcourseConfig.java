@@ -20,12 +20,25 @@
  * under the License.
  *******************************************************************************/
 
-package com.blackduck.integration.scm.dao;
+package com.blackduck.integration.scm.ci;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
-import com.blackduck.integration.scm.entity.CiBuild;
-
-public interface ICiBuildRepository extends CrudRepository<CiBuild, Long> {
+@Configuration
+public class ConcourseConfig {
 	
+	@Value("${concourse.url}")
+	private String concourseUrl;
+
+	@Value("${concourse.username}")
+	private String concourseUsername;
+
+	@Value("${concourse.password}")
+	private String concoursePassword;
+
+
+	public ConcourseClient concourseClient() {
+		return new ConcourseClient(concourseUrl, concourseUsername, concoursePassword);
+	}
 }
