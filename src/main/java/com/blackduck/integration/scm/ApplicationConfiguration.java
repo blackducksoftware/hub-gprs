@@ -40,12 +40,12 @@ public class ApplicationConfiguration {
 	}
 	
 	@Bean(initMethod="startMonitoring")
-	private BuildMonitor buildMonitor() {
+	public BuildMonitor buildMonitor() {
 		return new BuildMonitor(concourseConfiguration.concourseClient(), persistanceConfiguration.ciBuildDao(), getBuildLogDirectory());
 	}
 	
 	@Bean
-	private DeploymentService deploymentService() {
+	public DeploymentService deploymentService() {
 		return new DeploymentService(concourseConfiguration.concourseClient(), this.buildMonitor(), hubUrl, hubUsername, hubPassword);
 	}
 

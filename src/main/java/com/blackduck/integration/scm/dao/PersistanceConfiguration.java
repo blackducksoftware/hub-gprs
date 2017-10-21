@@ -3,7 +3,9 @@ package com.blackduck.integration.scm.dao;
 import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class PersistanceConfiguration {
 	
 	@Inject
