@@ -147,7 +147,7 @@ public class BuildMonitor {
 			}
 			if (event.getData() != null) {
 				try (Writer writer = Files.newBufferedWriter(logFilePath, StandardOpenOption.APPEND)) {
-					writer.write(event.getData().getPayload());
+					writer.write(StringUtils.defaultString(event.getData().getPayload()));
 				} catch (Throwable t) {
 					logger.error("Unable to write build log " + buildId, t);
 				}
