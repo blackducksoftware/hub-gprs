@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,6 +80,11 @@ public class BuildController {
 	@Inject
 	private SourceDao sourceDao;
 
+	/* Generates a standard pipeline name given all other fields of the build */
+	private static String generatePipelineName(String name) {
+		return name.replaceAll("/", "_") + UUID.randomUUID();
+	}
+
 	@GetMapping("/newBuild")
 	public String editBuildView(Model model) {
 		model.addAttribute("buildTypes", BuildType.values());
@@ -109,7 +115,7 @@ public class BuildController {
 		Map<String, String> buildProperties = new HashMap<>(extractParams(source, buildType, allParameters));
 		build.getProperties().putAll(buildProperties);
 		build.setBuildCommand(buildCommand);
-		build.setPipeline(build.getName().replaceAll("/", "_"));
+		build.setPipeline(generatePipelineName(build.getName()));
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
 
@@ -168,7 +174,7 @@ public class BuildController {
 		Map<String, String> buildProperties = new HashMap<>(extractParams(source, buildType, allParameters));
 		build.getProperties().putAll(buildProperties);
 		build.setBuildCommand(buildCommand);
-		build.setPipeline(build.getName().replaceAll("/", "_"));
+		build.setPipeline(generatePipelineName(build.getName()));
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
 

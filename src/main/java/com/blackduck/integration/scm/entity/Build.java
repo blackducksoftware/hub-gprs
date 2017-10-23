@@ -28,7 +28,6 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -72,7 +71,6 @@ public class Build {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date createdOn;
 
-	@Nullable
 	@Column(nullable = false, unique = true)
 	private String pipeline;
 
