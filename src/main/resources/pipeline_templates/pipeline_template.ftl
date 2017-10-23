@@ -76,7 +76,7 @@
 						]
 					},
 					"params": {
-						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.auto.import.cert\":true,\"detect.policy.check\":true}"
+						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}"
 					},
 					"on_failure": {
 						"put": "codebase-pr",
