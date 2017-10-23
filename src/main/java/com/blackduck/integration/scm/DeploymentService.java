@@ -80,6 +80,7 @@ public class DeploymentService {
 		String pipelineConfig = pipelineFactory.generatePipelineConfig(fullParams);
 		concourseClient.addPipeline(pipelineName, pipelineConfig);
 		concourseClient.unpausePipeline(pipelineName);
+		concourseClient.forceCheck(pipelineName);
 	}
 
 	//TODO: Eliminate duplication with BuildMonitor

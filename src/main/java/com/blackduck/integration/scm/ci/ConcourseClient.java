@@ -54,6 +54,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -74,21 +75,22 @@ import rx.apache.http.ObservableHttpResponse;
 
 public class ConcourseClient {
 
-	private static Logger logger = LoggerFactory.getLogger(ConcourseClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(ConcourseClient.class);
+
+	private static final String codeResourceName = "codebase-pr";
 
 	private final String concourseUrl;
 	private final String concourseUsername;
 	private final String concoursePassword;
 	private final String baseUrl;
-	
+
 	RestTemplate restTemplate = new RestTemplate();
-	
+
 	private HttpAsyncClient asyncClient;
 
 	private enum ExpiringMapKey {
 		INSTANCE;
 	}
-	
 
 	// Concourse's token expires after 24 hours, so we'll make sure ours expires too
 	// by keeping it in here:
@@ -100,7 +102,7 @@ public class ConcourseClient {
 		this.baseUrl = concourseUrl + "/api/v1/teams/main";
 		this.concourseUsername = concourseUsername;
 		this.concoursePassword = concoursePassword;
-		
+
 		restTemplate.getInterceptors().add(new ClientHttpRequestInterceptor() {
 			@Override
 			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
@@ -127,7 +129,6 @@ public class ConcourseClient {
 		}
 	}
 
-
 	/**
 	 * Concourse has almost normal OAuth2. But, it uses GET instead of standard POST
 	 * for basic authentication, which makes it unworkable with Spring's OAuth2
@@ -138,9 +139,7 @@ public class ConcourseClient {
 	private String getToken() {
 		return expiringTokenStore.computeIfAbsent(ExpiringMapKey.INSTANCE, (key) -> {
 			RestTemplate basicAuthTemplate = new RestTemplateBuilder()
-					.basicAuthorization(concourseUsername,
-							concoursePassword)
-					.defaultMessageConverters().build();
+					.basicAuthorization(concourseUsername, concoursePassword).defaultMessageConverters().build();
 
 			ResponseEntity<AuthToken> response = basicAuthTemplate.getForEntity(baseUrl + "/auth/token",
 					AuthToken.class);
@@ -174,15 +173,33 @@ public class ConcourseClient {
 	 * @return
 	 */
 	public List<Long> getActiveCiBuildIds() {
-		ResponseEntity<String> responseFromCi = restTemplate
-				.getForEntity(concourseUrl + "/api/v1/builds?limit=100000", String.class);
+		ResponseEntity<String> responseFromCi = restTemplate.getForEntity(concourseUrl + "/api/v1/builds?limit=100000",
+				String.class);
 		if (responseFromCi.getStatusCode().is2xxSuccessful()) {
 			return deserializeBuilds(responseFromCi.getBody())
-					//Active builds only
+					// Active builds only
 					.filter(puild -> StringUtils.isBlank(puild.getEndTime()))
-					//Return IDs
+					// Return IDs
 					.map(Build::getId).map(Long::parseLong).collect(Collectors.toList());
-		} else throw new CICommunicationException(responseFromCi.getStatusCode());
+		} else
+			throw new CICommunicationException(responseFromCi.getStatusCode());
+	}
+
+	/**
+	 * Forces the CI to check for new code on a deployed pipeline
+	 * 
+	 * @param pipelineName
+	 */
+	public void forceCheck(String pipelineName) {
+		String escapedPipelineName = escapePipelineName(pipelineName);
+		String checkUri = baseUrl + "/pipelines/" + escapedPipelineName + "/resources/" + codeResourceName + "/check";
+		String requestBody = "{}";
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+		ResponseEntity<String> response = restTemplate.postForEntity(checkUri, requestBody, String.class);
+		if (!response.getStatusCode().is2xxSuccessful()) {
+			logger.error("Unable to check for code changes for pipeline " + pipelineName);
+		}
 
 	}
 
@@ -268,8 +285,7 @@ public class ConcourseClient {
 	}
 
 	public Observable<BuildEvent> observeBuildEvents(long buildId) {
-		String uri = concourseUrl + "/api/v1/builds/" + Long.toString(buildId)
-				+ "/events";
+		String uri = concourseUrl + "/api/v1/builds/" + Long.toString(buildId) + "/events";
 
 		return ObservableHttp.createGet(uri, asyncClient).toObservable().flatMap(ObservableHttpResponse::getContent)
 				.map(String::new).takeWhile(text -> !"event: end".equals(text))
