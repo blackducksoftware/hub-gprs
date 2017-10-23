@@ -37,12 +37,14 @@ import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.hub.HubClient;
 
-@Component
 public class HubAuthenticationProvider implements AuthenticationProvider {
 
-	@Value("${blackduck.hub.url}")
-	private String hubUrl;
-
+	private final String hubUrl;
+	
+	public HubAuthenticationProvider(String hubUrl) {
+		this.hubUrl = hubUrl;
+	}
+	
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 

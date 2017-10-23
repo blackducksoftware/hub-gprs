@@ -30,7 +30,6 @@ import org.springframework.stereotype.Repository;
 
 import com.blackduck.integration.scm.entity.Source;
 
-@Repository
 public interface ISourceRepository extends CrudRepository<Source, Long> {
 	@Query("from Source s order by s.type, s.name")
 	List<Source> listOrderByTypeAndName();

@@ -24,9 +24,7 @@ package com.blackduck.integration.scm.ci;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -34,9 +32,6 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +47,6 @@ import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -64,14 +58,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.blackduck.integration.scm.ApplicationConfiguration;
-import com.blackduck.integration.scm.entity.CiBuild;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,28 +72,35 @@ import rx.Observable;
 import rx.apache.http.ObservableHttp;
 import rx.apache.http.ObservableHttpResponse;
 
-@Service
 public class ConcourseClient {
 
 	private static Logger logger = LoggerFactory.getLogger(ConcourseClient.class);
 
-	@Inject
-	private ApplicationConfiguration applicationConfiguration;
-
+	private final String concourseUrl;
+	private final String concourseUsername;
+	private final String concoursePassword;
+	private final String baseUrl;
+	
 	RestTemplate restTemplate = new RestTemplate();
-	String baseUrl;
+	
 	private HttpAsyncClient asyncClient;
 
 	private enum ExpiringMapKey {
 		INSTANCE;
 	}
+	
 
 	// Concourse's token expires after 24 hours, so we'll make sure ours expires too
 	// by keeping it in here:
 	private PassiveExpiringMap<ExpiringMapKey, String> expiringTokenStore = new PassiveExpiringMap<ExpiringMapKey, String>(
 			239 * 6 * 60 * 1000L);
 
-	public ConcourseClient() {
+	public ConcourseClient(String concourseUrl, String concourseUsername, String concoursePassword) {
+		this.concourseUrl = concourseUrl;
+		this.baseUrl = concourseUrl + "/api/v1/teams/main";
+		this.concourseUsername = concourseUsername;
+		this.concoursePassword = concoursePassword;
+		
 		restTemplate.getInterceptors().add(new ClientHttpRequestInterceptor() {
 			@Override
 			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
@@ -129,10 +127,6 @@ public class ConcourseClient {
 		}
 	}
 
-	@PostConstruct
-	private void setup() {
-		this.baseUrl = applicationConfiguration.getConcourseUrl() + "/api/v1/teams/main";
-	}
 
 	/**
 	 * Concourse has almost normal OAuth2. But, it uses GET instead of standard POST
@@ -144,10 +138,9 @@ public class ConcourseClient {
 	private String getToken() {
 		return expiringTokenStore.computeIfAbsent(ExpiringMapKey.INSTANCE, (key) -> {
 			RestTemplate basicAuthTemplate = new RestTemplateBuilder()
-					.basicAuthorization(applicationConfiguration.getConcourseUsername(),
-							applicationConfiguration.getConcoursePassword())
+					.basicAuthorization(concourseUsername,
+							concoursePassword)
 					.defaultMessageConverters().build();
-			// TODO: Parametrize team name.
 
 			ResponseEntity<AuthToken> response = basicAuthTemplate.getForEntity(baseUrl + "/auth/token",
 					AuthToken.class);
@@ -182,7 +175,7 @@ public class ConcourseClient {
 	 */
 	public List<Long> getActiveCiBuildIds() {
 		ResponseEntity<String> responseFromCi = restTemplate
-				.getForEntity(applicationConfiguration.getConcourseUrl() + "/api/v1/builds?limit=100000", String.class);
+				.getForEntity(concourseUrl + "/api/v1/builds?limit=100000", String.class);
 		if (responseFromCi.getStatusCode().is2xxSuccessful()) {
 			return deserializeBuilds(responseFromCi.getBody())
 					//Active builds only
@@ -275,7 +268,7 @@ public class ConcourseClient {
 	}
 
 	public Observable<BuildEvent> observeBuildEvents(long buildId) {
-		String uri = applicationConfiguration.getConcourseUrl() + "/api/v1/builds/" + Long.toString(buildId)
+		String uri = concourseUrl + "/api/v1/builds/" + Long.toString(buildId)
 				+ "/events";
 
 		return ObservableHttp.createGet(uri, asyncClient).toObservable().flatMap(ObservableHttpResponse::getContent)

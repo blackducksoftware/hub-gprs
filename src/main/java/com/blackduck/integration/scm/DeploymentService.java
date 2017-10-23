@@ -26,36 +26,41 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import com.blackduck.integration.scm.ci.Build;
-import com.blackduck.integration.scm.ci.ConcourseClient;
 import com.blackduck.integration.scm.ci.CICommunicationException;
+import com.blackduck.integration.scm.ci.ConcourseClient;
 
-//TODO: Merge with ConcourseClient (or better delineate responsibilities)
-@Service
+/**
+ * Performs operations for deployment and tracking of builds, delegating CI-specific functions to concourseClient.
+ * @author ybronshteyn
+ *
+ */
 public class DeploymentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeploymentService.class);
 
-	@Inject
-	private ConcourseClient concourseClient;
+	private final ConcourseClient concourseClient;
 
-	@Inject
-	private BuildMonitor buildMonitor;
+	private final BuildMonitor buildMonitor;
 
-	@Value("${blackduck.hub.url}")
-	private String hubUrl;
-	@Value("${blackduck.hub.username}")
-	private String hubUsername;
-	@Value("${blackduck.hub.password}")
-	private String hubPassword;
+	private final String hubUrl;
+	
+	private final String hubUsername;
+
+	private final String hubPassword;
+	
+	public DeploymentService(ConcourseClient concourseClient, BuildMonitor buildMonitor, String hubUrl,
+			String hubUsername, String hubPassword) {
+		this.concourseClient = concourseClient;
+		this.buildMonitor = buildMonitor;
+		this.hubUrl = hubUrl;
+		this.hubUsername = hubUsername;
+		this.hubPassword = hubPassword;
+	}
 
 	private PipelineFactory pipelineFactory = new PipelineFactory();
 

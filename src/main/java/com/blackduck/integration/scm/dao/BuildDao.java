@@ -32,11 +32,14 @@ import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.entity.Build;
 
-@Component
+
 public class BuildDao {
 
-	@Inject
-	private IBuildRepository buildRepository;
+	private final IBuildRepository buildRepository;
+	
+	public BuildDao(IBuildRepository buildRepository) {
+		this.buildRepository = buildRepository;
+	}
 
 	public Stream<Build> getAll() {
 		Iterable<Build>all = buildRepository.findAll();

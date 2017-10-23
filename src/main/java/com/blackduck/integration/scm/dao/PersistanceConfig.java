@@ -22,10 +22,36 @@
 
 package com.blackduck.integration.scm.dao;
 
-import org.springframework.data.repository.CrudRepository;
+import javax.inject.Inject;
 
-import com.blackduck.integration.scm.entity.CiBuild;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public interface ICiBuildRepository extends CrudRepository<CiBuild, Long> {
+@Configuration
+public class PersistanceConfig {
+	
+	@Inject
+	private ISourceRepository sourceRepository;
+	
+	@Inject
+	private IBuildRepository buildRepository;
+	
+	@Inject 
+	private ICiBuildRepository ciBuildRepository;
+	
+	@Bean
+	public SourceDao sourceDao() {
+		return new SourceDao(sourceRepository);
+	}
+	
+	@Bean
+	public CiBuildDao ciBuildDao() {
+		return new CiBuildDao(ciBuildRepository);
+	}
+	
+	@Bean
+	public BuildDao buildDao() {
+		return new BuildDao(buildRepository);
+	}
 	
 }
