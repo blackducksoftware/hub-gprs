@@ -51,11 +51,14 @@ import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 @Controller
 public class SourceController {
 
-	@Inject
-	private SourceDao sourceDao;
+	private final SourceDao sourceDao;
+
+	private final BuildDao buildDao;
 	
-	@Inject
-	private BuildDao buildDao;
+	public SourceController(SourceDao sourceDao, BuildDao buildDao) {
+		this.sourceDao = sourceDao;
+		this.buildDao = buildDao;
+	}
 
 	@GetMapping("/newSource")
 	public String newSource(Model model) {

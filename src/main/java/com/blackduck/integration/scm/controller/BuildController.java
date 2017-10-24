@@ -71,14 +71,18 @@ public class BuildController {
 
 	private static final Logger logger = LoggerFactory.getLogger(BuildController.class);
 
-	@Inject
-	private DeploymentService deploymentService;
+	private final DeploymentService deploymentService;
 
-	@Inject
-	private BuildDao buildDao;
+	private final BuildDao buildDao;
 
-	@Inject
-	private SourceDao sourceDao;
+	private final SourceDao sourceDao;
+	
+	public BuildController(SourceDao sourceDao, BuildDao buildDao, DeploymentService deploymentService) {
+		this.sourceDao = sourceDao;
+		this.buildDao = buildDao;
+		this.deploymentService = deploymentService;
+				
+	}
 
 	/* Generates a standard pipeline name given all other fields of the build */
 	private static String generatePipelineName(String name) {
