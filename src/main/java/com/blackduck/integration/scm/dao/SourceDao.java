@@ -25,10 +25,6 @@ package com.blackduck.integration.scm.dao;
 import java.util.Collections;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import org.springframework.stereotype.Component;
-
 import com.blackduck.integration.scm.entity.Source;
 
 public class SourceDao {

@@ -30,7 +30,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
@@ -182,10 +181,10 @@ public class BuildController {
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
 
-		// Redeploy to CI
+		// Update the build in DB to stop monitoring it
+		buildDao.update(build);
 		deploymentService.undeploy(oldPipelineName);
 		deploymentService.deploy(buildImage, buildImageTag, buildCommand, buildProperties, build.getPipeline());
-		buildDao.update(build);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 

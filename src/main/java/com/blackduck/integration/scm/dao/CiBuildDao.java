@@ -25,10 +25,7 @@ package com.blackduck.integration.scm.dao;
 import java.util.Collections;
 import java.util.Optional;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
-
-import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.entity.CiBuild;
 

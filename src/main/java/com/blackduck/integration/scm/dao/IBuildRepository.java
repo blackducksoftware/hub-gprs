@@ -25,7 +25,6 @@ package com.blackduck.integration.scm.dao;
 import java.util.stream.Stream;
 
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
 
 import com.blackduck.integration.scm.entity.Build;
 

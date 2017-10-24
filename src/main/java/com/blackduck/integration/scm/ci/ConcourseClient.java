@@ -54,7 +54,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -62,8 +61,10 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.blackduck.integration.scm.ci.Worker.Status;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -196,11 +197,17 @@ public class ConcourseClient {
 		String requestBody = "{}";
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-		ResponseEntity<String> response = restTemplate.postForEntity(checkUri, requestBody, String.class);
-		if (!response.getStatusCode().is2xxSuccessful()) {
-			logger.error("Unable to check for code changes for pipeline " + pipelineName);
+		try {
+			ResponseEntity<String> response = restTemplate.postForEntity(checkUri, requestBody, String.class);
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				logger.error("Unable to check for code changes for pipeline " + pipelineName);
+			}
+		} catch (HttpServerErrorException e) {
+			// Sometimes a POST to the check URI fails with a 500 and no explanation or
+			// meaningful log output because Concourse.
+			logger.warn("Unable to immediately check for code changes for pipeline: " + pipelineName + ": " + e.getMessage() + "\n"
+					+ e.getResponseBodyAsString());
 		}
-
 	}
 
 	public void addPipeline(String pipelineName, String pipelineConfig) {
@@ -267,6 +274,37 @@ public class ConcourseClient {
 		} else {
 			throw new CICommunicationException(response.getStatusCode());
 		}
+	}
+
+	private Stream<Worker> getWorkers() {
+		String workersUrl = concourseUrl + "/api/v1/workers";
+		String workerJson = restTemplate.getForObject(workersUrl, String.class);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			Iterator<Worker> worker = mapper.readerFor(Worker.class).readValues(workerJson);
+			if (!worker.hasNext())
+				return Stream.empty();
+			else
+				return StreamSupport.stream(Spliterators.spliteratorUnknownSize(worker, Spliterator.SIZED), false);
+		} catch (IOException ioe) {
+			throw new CICommunicationException("Unable to parse worker list", ioe);
+		}
+
+	}
+
+	/**
+	 * Prunes workers
+	 */
+	public void pruneWorkers() {
+		Stream<String> pruneableWorkerNames = getWorkers()
+				// Prune workers that are "STALLED" or "LANDED" (complete)
+				.filter(worker -> Status.STALLED.equals(worker.getStatus()) || Status.LANDED.equals(worker.getStatus()))
+				.map(Worker::getName);
+		String pruneUrl = concourseUrl + "/api/v1/workers/${id}/prune";
+		pruneableWorkerNames.forEach(workerName -> {
+			restTemplate.put(pruneUrl, "{}", workerName);
+		});
+		logger.debug("Workers pruned.");
 	}
 
 	private Stream<Build> deserializeBuilds(String buildListJson) {

@@ -25,7 +25,6 @@ package com.blackduck.integration.scm.controller;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,9 +43,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.blackduck.integration.scm.dao.BuildDao;
 import com.blackduck.integration.scm.dao.SourceDao;
 import com.blackduck.integration.scm.entity.ParamDefinition;
+import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.blackduck.integration.scm.entity.Source;
 import com.blackduck.integration.scm.entity.SourceType;
-import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 
 @Controller
 public class SourceController {

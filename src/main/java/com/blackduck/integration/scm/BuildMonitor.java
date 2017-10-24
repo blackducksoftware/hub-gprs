@@ -39,8 +39,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +64,13 @@ public class BuildMonitor {
 
 	private final Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
+	/**
+	 * 
+	 * @param concourseClient
+	 * @param ciBuildDao
+	 * @param buildLogDirectory
+	 * @param cleanup
+	 */
 	public BuildMonitor(ConcourseClient concourseClient, CiBuildDao ciBuildDao, Optional<String> buildLogDirectory) {
 		this.ciBuildDao = ciBuildDao;
 		this.concourseClient = concourseClient;
@@ -122,6 +127,7 @@ public class BuildMonitor {
 	private void processBuildCompletion(long buildId) {
 		ciBuildDao.recordCompletion(buildId);
 		monitoredBuilds.remove(buildId);
+		concourseClient.pruneWorkers();
 	}
 
 	public boolean isInViolation(long buildId) {

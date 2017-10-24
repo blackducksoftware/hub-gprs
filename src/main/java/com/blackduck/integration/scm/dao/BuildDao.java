@@ -26,10 +26,6 @@ import java.util.Date;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.inject.Inject;
-
-import org.springframework.stereotype.Component;
-
 import com.blackduck.integration.scm.entity.Build;
 
 
