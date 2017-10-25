@@ -62,6 +62,7 @@ import com.blackduck.integration.scm.entity.BuildType;
 import com.blackduck.integration.scm.entity.ParamDefinition;
 import com.blackduck.integration.scm.entity.Source;
 import com.blackduck.integration.scm.entity.SourceType;
+import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
 
@@ -75,12 +76,12 @@ public class BuildController {
 	private final BuildDao buildDao;
 
 	private final SourceDao sourceDao;
-	
+
 	public BuildController(SourceDao sourceDao, BuildDao buildDao, DeploymentService deploymentService) {
 		this.sourceDao = sourceDao;
 		this.buildDao = buildDao;
 		this.deploymentService = deploymentService;
-				
+
 	}
 
 	/* Generates a standard pipeline name given all other fields of the build */
@@ -102,11 +103,13 @@ public class BuildController {
 	@PreAuthorize("ROLE_codescanner")
 	@PutMapping("/builds")
 	@ResponseBody
-	public ResponseEntity<String> postDeployment(@RequestParam(required = true, name = "source_id") long sourceId,
+	public ResponseEntity<String> deployNewBuild(@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,
 			@RequestParam(required = true, name = "build_command") String buildCommand,
 			@RequestParam(required = true, name = "build_image") String buildImage,
 			@RequestParam(required = true, name = "build_image_tag") String buildImageTag,
+			@RequestParam(required = false, name = "project_name") String projectName,
+			@RequestParam(required = false, name = "version_name") String versionName,
 			@RequestParam Map<String, String> allParameters) {
 		Source source = sourceDao.findById(sourceId);
 		if (source == null) {
@@ -121,10 +124,13 @@ public class BuildController {
 		build.getProperties().putAll(buildProperties);
 		build.setBuildCommand(buildCommand);
 		build.setPipeline(generatePipelineName(build.getName()));
+		build.setProjectName(Strings.emptyToNull(projectName));
+		build.setVersionName(Strings.emptyToNull(versionName));
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
 
-		deploymentService.deploy(buildImage, buildImageTag, buildCommand, buildProperties, build.getPipeline());
+		deploymentService.deploy(buildImage, buildImageTag, buildCommand, build.getProjectName(),
+				build.getVersionName(), buildProperties, build.getPipeline());
 		buildDao.create(build);
 		return new ResponseEntity<>("{}", HttpStatus.CREATED);
 	}
@@ -167,6 +173,8 @@ public class BuildController {
 			@RequestParam(required = true, name = "build_command") String buildCommand,
 			@RequestParam(required = true, name = "build_image") String buildImage,
 			@RequestParam(required = true, name = "build_image_tag") String buildImageTag,
+			@RequestParam(required = false, name = "project_name") String projectName,
+			@RequestParam(required = false, name = "version_name") String versionName,
 			@RequestParam Map<String, String> allParameters) {
 
 		Build build = buildDao.findById(id);
@@ -182,11 +190,14 @@ public class BuildController {
 		build.setPipeline(generatePipelineName(build.getName()));
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
+		build.setProjectName(Strings.emptyToNull(projectName));
+		build.setVersionName(Strings.emptyToNull(versionName));
 
 		// Update the build in DB to stop monitoring it
 		buildDao.update(build);
 		deploymentService.undeploy(oldPipelineName);
-		deploymentService.deploy(buildImage, buildImageTag, buildCommand, buildProperties, build.getPipeline());
+		deploymentService.deploy(buildImage, buildImageTag, buildCommand, build.getProjectName(),
+				build.getVersionName(), buildProperties, build.getPipeline());
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 

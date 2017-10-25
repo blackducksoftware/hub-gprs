@@ -59,12 +59,17 @@ public class Build {
 
 	private String buildCommand;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String image;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String imageTag;
-	
+
+	@Column(nullable = true)
+	private String projectName;
+
+	@Column(nullable = true)
+	private String versionName;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	private Source source;
@@ -139,6 +144,22 @@ public class Build {
 		this.imageTag = imageTag;
 	}
 
+	public String getProjectName() {
+		return projectName;
+	}
+	
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+	
+	public String getVersionName() {
+		return versionName;
+	}
+	
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
+	}
+	
 	@Transient
 	private Properties properties = new Properties();
 

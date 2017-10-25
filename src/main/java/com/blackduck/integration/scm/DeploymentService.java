@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +37,9 @@ import com.blackduck.integration.scm.ci.CICommunicationException;
 import com.blackduck.integration.scm.ci.ConcourseClient;
 
 /**
- * Performs operations for deployment and tracking of builds, delegating CI-specific functions to concourseClient.
+ * Performs operations for deployment and tracking of builds, delegating
+ * CI-specific functions to concourseClient.
+ * 
  * @author ybronshteyn
  *
  */
@@ -48,11 +52,11 @@ public class DeploymentService {
 	private final BuildMonitor buildMonitor;
 
 	private final String hubUrl;
-	
+
 	private final String hubUsername;
 
 	private final String hubPassword;
-	
+
 	public DeploymentService(ConcourseClient concourseClient, BuildMonitor buildMonitor, String hubUrl,
 			String hubUsername, String hubPassword) {
 		this.concourseClient = concourseClient;
@@ -64,8 +68,8 @@ public class DeploymentService {
 
 	private PipelineFactory pipelineFactory = new PipelineFactory();
 
-	public void deploy(String buildImage, String buildImageTag, String buildCommand, Map<String, String> params,
-			String pipelineName) {
+	public void deploy(String buildImage, String buildImageTag, String buildCommand, @Nullable String projectName,
+			@Nullable String versionName, Map<String, String> params, String pipelineName) {
 		HashMap<String, String> fullParams = new HashMap<>(params);
 		// Add hub info
 
@@ -76,6 +80,12 @@ public class DeploymentService {
 		fullParams.put("build_image", buildImage);
 		fullParams.put("build_image_tag", buildImageTag);
 		fullParams.put("build_command", buildCommand);
+		// Add project info
+		if (StringUtils.isNotBlank(projectName))
+			fullParams.put("project_name", projectName);
+		if (StringUtils.isNotBlank(versionName)) {
+			fullParams.put("version_name", versionName);
+		}
 
 		String pipelineConfig = pipelineFactory.generatePipelineConfig(fullParams);
 		concourseClient.addPipeline(pipelineName, pipelineConfig);
@@ -83,7 +93,7 @@ public class DeploymentService {
 		concourseClient.forceCheck(pipelineName);
 	}
 
-	//TODO: Eliminate duplication with BuildMonitor
+	// TODO: Eliminate duplication with BuildMonitor
 	public BuildStatus getStatus(String pipelineName) {
 		try {
 			Optional<Build> concourseBuild = concourseClient.getLatestBuild(pipelineName, "hub-detect");
@@ -110,6 +120,5 @@ public class DeploymentService {
 	public void undeploy(String pipelineName) {
 		concourseClient.destroyPipeline(pipelineName);
 	}
-	
 
 }
