@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import com.blackduck.integration.scm.ci.Build;
 import com.blackduck.integration.scm.ci.CICommunicationException;
 import com.blackduck.integration.scm.ci.ConcourseClient;
+import com.google.common.base.Strings;
 
 /**
  * Performs operations for deployment and tracking of builds, delegating
@@ -79,7 +80,7 @@ public class DeploymentService {
 		// Add build info
 		fullParams.put("build_image", buildImage);
 		fullParams.put("build_image_tag", buildImageTag);
-		fullParams.put("build_command", buildCommand);
+		fullParams.put("build_command", Strings.nullToEmpty(buildCommand));
 		// Add project info
 		if (StringUtils.isNotBlank(projectName))
 			fullParams.put("project_name", projectName);

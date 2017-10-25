@@ -28,7 +28,8 @@ import com.google.common.collect.ImmutableSet;
 
 public enum BuildType {
 	MVN("Maven", "maven", "3-jdk-8", "mvn package -D skipTests=true"),
-	Gradle("Gradle", "openjdk", "8-jdk", "./gradlew build -x test");
+	Gradle("Gradle", "openjdk", "8-jdk", "./gradlew build -x test"),
+	None("Hub scan only", "openjdk", "8-jre","");
 
 	private final String friendlyName;
 	private final String image;
