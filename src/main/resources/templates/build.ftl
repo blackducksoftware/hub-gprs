@@ -9,7 +9,7 @@
 <br />
 
 <form action="/builds<#if build??>/${build.id}</#if>"
-	method="<#if build??>PUT<#else>POST</#if>" id="newDeploymentForm">
+	method="<#if build??>POST<#else>PUT</#if>" id="newDeploymentForm">
 	<input type="hidden" name="${_csrf.parameterName}"
 		value="${_csrf.token}" />
 
@@ -59,31 +59,44 @@
 				</script>
 			</td>
 		</tr>
-		<tr>
-			<td class="formFieldName">
-				Build image
-			</td>
-			<td>
-				<input type="text" name="build_image" id="build_image" class="param" <#if build??>value="${build.image}"</#if>)/>
-			</td>
-		</tr>
-		<tr>
-			<td class="formFieldName">
-				Build image tag
-			</td>
-			<td>
-				<input type="text" name="build_image_tag" id="build_image_tag" class="param" <#if build??>value="${build.imageTag}"</#if>/>
-			</td>
-		</tr>
-		<tr>
-			<td class="formFieldName">
-				Build command
-			</td>
-			<td>
-				<input type="text" name="build_command" id="build_command" <#if build??>value="${build.buildCommand}"</#if> class="param"/>
-			</td>
-		</tr>
-	</table>
+		</table>
+		<br/><br/>
+		
+		
+		<div id="advancedContent" style="width:600px"  class="panel panel-default" >
+		  	<div class="panel-heading">
+	  			<h3 class="panel-title">Advanced</h3>
+  			</div>
+		  	<div class="panel-body">
+				<table class="formTable">
+				<tr>
+					<td class="formFieldName">
+						Build image
+					</td>
+					<td>
+						<input type="text" name="build_image" id="build_image" class="param" <#if build??>value="${build.image}"</#if>)/>
+					</td>
+				</tr>
+				<tr>
+					<td class="formFieldName">
+						Build image tag
+					</td>
+					<td>
+						<input type="text" name="build_image_tag" id="build_image_tag" class="param" <#if build??>value="${build.imageTag}"</#if>/>
+					</td>
+				</tr>
+				<tr>
+					<td class="formFieldName">
+						Build command
+					</td>
+					<td>
+						<input type="text" name="build_command" id="build_command" <#if build??>value="${build.buildCommand}"</#if> class="param"/>
+					</td>
+				</tr>
+				</table>
+		  </div>
+		</div>
+
 </form>
 <button name="submitButton"
 	onclick="submitFormAndGoto($('#newDeploymentForm'), $('#messageDiv'),'/builds')">Submit</button>

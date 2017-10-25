@@ -77,6 +77,9 @@
 					},
 					"params": {
 						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}"
+						<#if projectName?hasContent>
+						, "detect.project.name":"${projectName}"
+						</#if>
 					},
 					"on_failure": {
 						"put": "codebase-pr",

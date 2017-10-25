@@ -99,7 +99,9 @@ public class BuildController {
 		return "build";
 	}
 
-	@PostMapping("/builds")
+	@PreAuthorize("ROLE_codescanner")
+	@PutMapping("/builds")
+	@ResponseBody
 	public ResponseEntity<String> postDeployment(@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,
 			@RequestParam(required = true, name = "build_command") String buildCommand,
@@ -157,8 +159,8 @@ public class BuildController {
 	}
 
 	@PreAuthorize("ROLE_codescanner")
-	@PutMapping("/builds/{id}")
-	@Transactional
+	@PostMapping("/builds/{id}")
+	@ResponseBody
 	public ResponseEntity<String> applyBuildEdits(@PathVariable long id,
 			@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,

@@ -64,6 +64,7 @@ public class Build {
 
 	@Column(nullable = false)
 	private String imageTag;
+	
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	private Source source;

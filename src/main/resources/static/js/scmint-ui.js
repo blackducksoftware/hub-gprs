@@ -57,7 +57,12 @@ function submitFormAndGoto(form, messageDiv, gotoUrl) {
              loadPageInMain(gotoUrl);
         },
         error   : function( xhr, err ) {
-        		messageDiv.html(xhr.responseJSON.message != null ?xhr.responseJSON.message :  xhr.responseJSON.exception);
+        		var type = xhr.getResponseHeader("Content-Type");
+        		if (type.startsWith("application/json")){
+        			messageDiv.html(xhr.responseJSON.message != null ?xhr.responseJSON.message :  xhr.responseJSON.exception);
+        		} else {
+        			$('#page_content').html(xhr.responseText);
+        		}
         }
     });    
 }
