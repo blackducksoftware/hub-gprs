@@ -22,10 +22,9 @@
 
 package com.blackduck.integration.scm.controller;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,9 +32,6 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -62,9 +58,10 @@ import com.blackduck.integration.scm.entity.BuildType;
 import com.blackduck.integration.scm.entity.ParamDefinition;
 import com.blackduck.integration.scm.entity.Source;
 import com.blackduck.integration.scm.entity.SourceType;
+import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Streams;
 
 @Controller
 public class BuildController {
@@ -101,7 +98,7 @@ public class BuildController {
 	}
 
 	@PreAuthorize("ROLE_codescanner")
-	@PutMapping("/builds")
+	@PostMapping("/builds")
 	@ResponseBody
 	public ResponseEntity<String> deployNewBuild(@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,
@@ -120,8 +117,7 @@ public class BuildController {
 		BuildType buildType = BuildType.valueOf(buildTypeName);
 		build.setSource(source);
 		build.setBuildType(buildType);
-		Map<String, String> buildProperties = new HashMap<>(extractParams(source, buildType, allParameters));
-		build.getProperties().putAll(buildProperties);
+		build.setProperties(extractParameters(buildType, source.getType(), allParameters));
 		build.setBuildCommand(buildCommand);
 		build.setPipeline(generatePipelineName(build.getName()));
 		build.setProjectName(Strings.emptyToNull(projectName));
@@ -129,8 +125,7 @@ public class BuildController {
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
 
-		deploymentService.deploy(buildImage, buildImageTag, buildCommand, build.getProjectName(),
-				build.getVersionName(), buildProperties, build.getPipeline());
+		deploymentService.deploy(build);
 		buildDao.create(build);
 		return new ResponseEntity<>("{}", HttpStatus.CREATED);
 	}
@@ -165,7 +160,7 @@ public class BuildController {
 	}
 
 	@PreAuthorize("ROLE_codescanner")
-	@PostMapping("/builds/{id}")
+	@PutMapping("/builds/{id}")
 	@ResponseBody
 	public ResponseEntity<String> applyBuildEdits(@PathVariable long id,
 			@RequestParam(required = true, name = "source_id") long sourceId,
@@ -184,8 +179,8 @@ public class BuildController {
 		BuildType buildType = BuildType.valueOf(buildTypeName);
 		build.setSource(source);
 		build.setBuildType(buildType);
-		Map<String, String> buildProperties = new HashMap<>(extractParams(source, buildType, allParameters));
-		build.getProperties().putAll(buildProperties);
+
+		build.setProperties(extractParameters(buildType, source.getType(), allParameters));
 		build.setBuildCommand(buildCommand);
 		build.setPipeline(generatePipelineName(build.getName()));
 		build.setImage(buildImage);
@@ -196,8 +191,7 @@ public class BuildController {
 		// Update the build in DB to stop monitoring it
 		buildDao.update(build);
 		deploymentService.undeploy(oldPipelineName);
-		deploymentService.deploy(buildImage, buildImageTag, buildCommand, build.getProjectName(),
-				build.getVersionName(), buildProperties, build.getPipeline());
+		deploymentService.deploy(build);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
@@ -224,41 +218,16 @@ public class BuildController {
 		return mav;
 	}
 
-	/**
-	 * Extracts and sanitizes request parameters appropriate for the provided
-	 * source.
-	 * 
-	 * @param source
-	 * @param values
-	 * @return
-	 */
-	private Map<String, String> extractParams(Source source, BuildType buildType, Map<String, String> values) {
-
-		Stream<ParamDefinition> allRequiredParamNames = Streams.concat(
-				source.getType().getSourceParameterDefinitions().stream(),
-				source.getType().getBuildParameterDefinitions().stream(), buildType.getParams().stream());
-
-		return allRequiredParamNames
-				// Get a value to bind from the build or source parameters
-				.map(paramDef -> Pair.of(paramDef,
-						ObjectUtils.firstNonNull(values.get(paramDef.getName()),
-								(String) source.getProperties().get(paramDef.getName()))))
-				// If a required value is missing, error out!
-				.peek(pair -> {
-					if (pair.getKey().isRequired() && StringUtils.isBlank(pair.getValue())) {
-						throw new IllegalArgumentException("Missing value: " + pair.getKey().getFriendlyName());
-					}
-				})
-				// Sanitize values
-				.map(pair -> Pair.of(pair.getKey(), sanitizeParamValue(pair.getValue())))
-				// Map'em!
-				.collect(Collectors.toMap(pair -> pair.getKey().getName(), Pair::getValue));
-	}
-
-	private String sanitizeParamValue(String param) {
-		String[] toReplace = new String[] { "'", "\"" };
-		String[] replacements = new String[toReplace.length];
-		Arrays.fill(replacements, "_");
-		return StringUtils.replaceEach(param, toReplace, replacements);
+	private Properties extractParameters(BuildType buildType, SourceType sourceType, Map<String, String>params) {
+		Properties properties = new Properties();
+		Iterable<ParamDefinition> expectedBuildParams = Iterables.concat(buildType.getParams(), sourceType.getBuildParameterDefinitions());
+		for (ParamDefinition paramDef : expectedBuildParams) {
+			String paramValue = params.get(paramDef.getName());
+			if (ParamType.TRUE_FALSE == paramDef.getType()) {
+				paramValue = Boolean.toString("on".equals(paramValue));
+			}
+			properties.put(paramDef.getName(), paramValue);
+		}
+		return properties;
 	}
 }

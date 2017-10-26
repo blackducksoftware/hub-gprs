@@ -167,8 +167,8 @@ public class Build {
 		return properties;
 	}
 
-	public void setProperties(Properties secrets) {
-		this.properties = secrets;
+	public void setProperties(Properties properties) {
+		this.properties = properties;
 	}
 
 	/**

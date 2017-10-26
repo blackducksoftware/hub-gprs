@@ -23,22 +23,26 @@
 package com.blackduck.integration.scm.dao;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.blackduck.integration.scm.entity.Build;
+import javax.transaction.Transactional;
 
+import com.blackduck.integration.scm.entity.Build;
 
 public class BuildDao {
 
 	private final IBuildRepository buildRepository;
-	
+
 	public BuildDao(IBuildRepository buildRepository) {
 		this.buildRepository = buildRepository;
 	}
 
 	public Stream<Build> getAll() {
-		Iterable<Build>all = buildRepository.findAll();
+		Iterable<Build> all = buildRepository.findAll();
 		if (all == null) {
 			return Stream.empty();
 		} else {
@@ -49,14 +53,32 @@ public class BuildDao {
 	public Build findById(long id) {
 		return buildRepository.findOne(id);
 	}
-	
+
 	/**
-	 * Streams builds by source Id
+	 * Returns any existing build with specified source ID
+	 * 
 	 * @param sourceId
 	 * @return
 	 */
-	public Stream<Build> findBySourceId(long sourceId){
-		return buildRepository.findBySourceId(sourceId);
+	public Optional<Build> findAnyBySourceId(long sourceId) {
+		return findBySourceId(sourceId).findAny();
+	}
+
+	/**
+	 * Finds all existing builds with the specified source ID
+	 * 
+	 * @param sourceId
+	 * @return
+	 */
+	@Transactional
+	public List<Build> findAllBySourceId(long sourceId) {
+		return findBySourceId(sourceId).collect(Collectors.toList());
+	}
+
+	
+	private Stream<Build> findBySourceId(long sourceId) {
+		Stream<Build> result = buildRepository.findBySourceId(sourceId);
+		return result == null ? Stream.empty() : result;
 	}
 
 	/**
@@ -70,16 +92,17 @@ public class BuildDao {
 		build.setCreatedOn(new Date());
 		return buildRepository.save(build);
 	}
-	
+
 	/**
 	 * Updates an existing build and returns the persisted instance.
+	 * 
 	 * @param build
 	 * @return
 	 */
 	public Build update(Build build) {
 		return buildRepository.save(build);
 	}
-	
+
 	/**
 	 * Deletes a build
 	 */

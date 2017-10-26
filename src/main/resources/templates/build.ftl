@@ -9,7 +9,7 @@
 <br />
 
 <form action="/builds<#if build??>/${build.id}</#if>"
-	method="<#if build??>POST<#else>PUT</#if>" id="newDeploymentForm">
+	method="<#if build??>PUT<#else>POST</#if>" id="newDeploymentForm">
 	<input type="hidden" name="${_csrf.parameterName}"
 		value="${_csrf.token}" />
 

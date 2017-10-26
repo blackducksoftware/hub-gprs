@@ -40,8 +40,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.blackduck.integration.scm.DeploymentService;
 import com.blackduck.integration.scm.dao.BuildDao;
 import com.blackduck.integration.scm.dao.SourceDao;
+import com.blackduck.integration.scm.entity.Build;
 import com.blackduck.integration.scm.entity.ParamDefinition;
 import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.blackduck.integration.scm.entity.Source;
@@ -53,10 +55,13 @@ public class SourceController {
 	private final SourceDao sourceDao;
 
 	private final BuildDao buildDao;
-	
-	public SourceController(SourceDao sourceDao, BuildDao buildDao) {
+
+	private final DeploymentService deploymentService;
+
+	public SourceController(SourceDao sourceDao, BuildDao buildDao, DeploymentService deploymentService) {
 		this.sourceDao = sourceDao;
 		this.buildDao = buildDao;
+		this.deploymentService = deploymentService;
 	}
 
 	@GetMapping("/newSource")
@@ -78,19 +83,18 @@ public class SourceController {
 		model.addAttribute("source", source);
 		return newSource(model);
 	}
-	
+
 	@DeleteMapping("/sources/{id}")
 	@ResponseBody
 	@Transactional
 	public ResponseEntity<String> deleteSource(@PathVariable long id, Model model) {
-		if (buildDao.findBySourceId(id).findAny().isPresent()) {
+		if (buildDao.findAnyBySourceId(id).isPresent()) {
 			throw new IllegalStateException("Unable to delete SCM. Please delete any monitored repositories first.");
-		}
-		else {
+		} else {
 			sourceDao.delete(id);
 			return new ResponseEntity<>("{}", HttpStatus.OK);
 		}
-	
+
 	}
 
 	@PostMapping(path = "/sources", produces = "application/json")
@@ -107,22 +111,30 @@ public class SourceController {
 	@PutMapping(path = "/sources/{id}", produces = "application/json")
 	public ResponseEntity<String> updateSource(@PathVariable long id, @RequestParam String name,
 			@RequestParam String type, @RequestParam Map<String, String> allRequestParams, Model model) {
+		// Update the source
 		Source source = sourceDao.findById(id);
 		source.setName(name);
 		source.setType(SourceType.valueOf(StringUtils.upperCase(type)));
 		setSourceTypeParamsFromRequest(source, allRequestParams);
 		sourceDao.update(source);
+		
+		// Since settings changed may effect existing builds, we should redeploy all the
+		// existing builds on this source
+		List<Build> toRedeploy = buildDao.findAllBySourceId(id);
+		toRedeploy.forEach(build -> {
+			deploymentService.undeploy(build.getPipeline());
+			deploymentService.deploy(build);
+		});
 		return new ResponseEntity<>("{}", HttpStatus.OK);
 	}
 
-	//TODO: Generalize property extraction logic
 	private void setSourceTypeParamsFromRequest(Source source, Map<String, String> requestParams) {
 		if (requestParams == null)
 			return;
 		String targetTypeName = source.getType().name();
 		source.getProperties().clear();
 		for (ParamDefinition definiton : source.getType().getSourceParameterDefinitions()) {
-			String value = requestParams.get(targetTypeName+"_"+definiton.getName());
+			String value = requestParams.get(targetTypeName + "_" + definiton.getName());
 			if (ParamType.TRUE_FALSE == definiton.getType()) {
 				value = Boolean.toString("on".equals(value));
 			}
