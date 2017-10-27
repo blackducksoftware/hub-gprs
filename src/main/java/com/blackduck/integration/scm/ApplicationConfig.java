@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.blackduck.integration.scm.ci.ConcourseConfig;
 import com.blackduck.integration.scm.dao.PersistanceConfig;
+import com.blackduck.integration.scm.fileinject.InjectServer;
 
 @Configuration
 @EnableTransactionManagement
@@ -73,6 +74,12 @@ public class ApplicationConfig {
 	public DeploymentService deploymentService() {
 		return new DeploymentService(concourseConfiguration.concourseClient(), this.buildMonitor(), hubUrl, hubUsername,
 				hubPassword);
+	}
+	
+	
+	@Bean(initMethod="start")
+	public InjectServer injectServer() {
+		return new InjectServer();
 	}
 
 }

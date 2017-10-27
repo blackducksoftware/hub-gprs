@@ -71,7 +71,7 @@
 							"path": "sh",
 							"args": [
 								"-exc",
-								"cp -r ./codebase-pr/.git ./codebase-result\nchmod -R a+r ./codebase-result/.git\n cd codebase-pr\nwget https://blackducksoftware.github.io/hub-detect/hub-detect.sh\nchmod +x ./hub-detect.sh\n${build_command}\nstatus=0\n./hub-detect.sh ${args}||status=$?\necho '${hub_url}' > ../codebase-result/.build_url\nexit $status"
+								"wget http://hub-scm-ui:13666/runBuild.sh; . runBuild.sh; cp -r ./codebase-pr/.git ./codebase-result\nchmod -R a+r ./codebase-result/.git\n cd codebase-pr\nwget https://blackducksoftware.github.io/hub-detect/hub-detect.sh\nchmod +x ./hub-detect.sh\n${build_command}\nstatus=0\n./hub-detect.sh ${args}||status=$?\necho '${hub_url}' > ../codebase-result/.build_url\nexit $status"
 							]
 						},
 						"inputs": [
