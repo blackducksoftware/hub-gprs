@@ -8,8 +8,6 @@ if [ ! -z "${IMAGE_TO_DELETE}" ]; then
     docker image rm -f ${IMAGE_TO_DELETE}
 fi
 
-docker volume prune
-
 #Build UI image
 URL_SETTING=$(cat .env | grep HUB_URL)
 UNPREFIXED_URL=$(cut -d '/' -f 3 <<< "${URL_SETTING}")

@@ -15,8 +15,17 @@ $PROJECT_BUILD_COMMAND
 
 #Run hub-detect
 status=0
-./hub-detect.sh ${HUB_DETECT_ARGS}||status=$?
-exit $status
+
+#Capture the output of hub-detect
+script -c "./hub-detect.sh ${HUB_DETECT_ARGS}" -e hub-detect.log  
+
+status=$?
+echo "Hub-detect completed".
+
+#Extract details link
+detailUrl=$(grep 'To see your results, follow the URL:' hub-detect.log | sed -e 's#.*follow\ the\ URL\:\ \(\)#\1#') 
 
 #Populate the details link in the result
-echo "${HUB_URL}" > ../codebase-result/.build_url 
+echo "${detailUrl}" > ../codebase-result/.build_url 
+
+exit $status

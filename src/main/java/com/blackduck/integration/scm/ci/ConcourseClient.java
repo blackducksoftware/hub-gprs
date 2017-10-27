@@ -301,7 +301,7 @@ public class ConcourseClient {
 				// Prune workers that are "STALLED" or "LANDED" (complete)
 				.filter(worker -> Status.STALLED.equals(worker.getStatus()) || Status.LANDED.equals(worker.getStatus()))
 				.map(Worker::getName);
-		String pruneUrl = concourseUrl + "/api/v1/workers/${id}/prune";
+		String pruneUrl = concourseUrl + "/api/v1/workers/{id}/prune";
 		pruneableWorkerNames.forEach(workerName -> {
 			try {
 				restTemplate.put(pruneUrl,"{}", workerName);
