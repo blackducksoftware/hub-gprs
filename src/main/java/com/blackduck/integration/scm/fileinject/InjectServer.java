@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.undertow.Undertow;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;
@@ -49,14 +50,10 @@ public class InjectServer {
 	private final Undertow injectServer;
 
 	public InjectServer() {
-		try {
-			Path resourcePath = Paths.get(this.getClass().getClassLoader().getResource("build_resources").toURI());
-			ResourceManager resourceManager = new PathResourceManager(resourcePath);
-			injectServer = Undertow.builder().addHttpListener(injectPort, "localhost")
-					.setHandler(new ResourceHandler(resourceManager)).build();
-		} catch (URISyntaxException e) {
-			throw new IllegalStateException("Unable to locate build files.", e);
-		}
+		ResourceManager resourceManager = new ClassPathResourceManager(this.getClass().getClassLoader(),
+				"build_resources/");
+		injectServer = Undertow.builder().addHttpListener(injectPort, "0.0.0.0")
+				.setHandler(new ResourceHandler(resourceManager)).build();
 	}
 
 	public void start() {

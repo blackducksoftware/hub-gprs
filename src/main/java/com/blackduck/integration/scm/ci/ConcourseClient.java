@@ -232,6 +232,7 @@ public class ConcourseClient {
 		String deleteUrl = baseUrl + "/pipelines/" + escapedPipelineName;
 		try {
 			restTemplate.delete(deleteUrl);
+			pruneWorkers();
 		} catch (HttpClientErrorException e) {
 			// If 404, then we're ok - we didn't want it there anyway!
 			if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
@@ -302,7 +303,11 @@ public class ConcourseClient {
 				.map(Worker::getName);
 		String pruneUrl = concourseUrl + "/api/v1/workers/${id}/prune";
 		pruneableWorkerNames.forEach(workerName -> {
-			restTemplate.put(pruneUrl, "{}", workerName);
+			try {
+				restTemplate.put(pruneUrl,"{}", workerName);
+			} catch (Throwable t) {
+				logger.error("Error pruning workers.", t);
+			}
 		});
 		logger.debug("Workers pruned.");
 	}
