@@ -71,7 +71,7 @@
 							"path": "sh",
 							"args": [
 								"-exc",
-								"cp -r ./codebase-pr/.git ./codebase-result\nchmod -R a+r ./codebase-result/.git\n cd codebase-pr\nwget https://blackducksoftware.github.io/hub-detect/hub-detect.sh\nchmod +x ./hub-detect.sh\n${build_command}\nstatus=0\n./hub-detect.sh ${args}||status=$?\necho '${hub_url}' > ../codebase-result/.build_url\nexit $status"
+								"wget http://hub-scm-ui:13666/runBuild.sh\n sh runBuild.sh\n"
 							]
 						},
 						"inputs": [
@@ -86,7 +86,10 @@
 						]
 					},
 					"params": {
-						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}"
+						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}",
+						"PROJECT_BUILD_COMMAND": "${build_command}",
+						"HUB_URL": "${hub_url}",
+						"HUB_DETECT_ARGS": "${args}"
 					},
 					"on_failure": {
 						"put": "codebase-pr",

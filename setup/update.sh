@@ -1,9 +1,5 @@
 #!/bin/bash
-UI_CONTAINER=$(docker ps -a -f label=hub-scm-ui -q)
-if [ ! -z "$UI_CONTAINER" ]; then
-    echo "Stopping and removing application"
-    docker rm -f $UI_CONTAINER
-fi
+./shutdown.sh
 
 #Delete the built UI image.
 IMAGE_TO_DELETE=$(docker image ls blackducksoftware/hub-scm-ui -q)
