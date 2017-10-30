@@ -113,6 +113,13 @@
 				</tr>
 				
 				</table>
+				<#if build??>
+					<h2>Files</h2>
+					<#list build.fileInjections as file>
+						${file.name} &#8594; ${file.target} <img src="/img/trash.svg" />
+					</#list>
+				</#if>
+				
 		  </div>
 		</div>
 

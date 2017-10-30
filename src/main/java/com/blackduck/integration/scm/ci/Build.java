@@ -22,6 +22,12 @@
 
 package com.blackduck.integration.scm.ci;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.OneToMany;
+
+import com.blackduck.integration.scm.entity.FileInjection;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -40,6 +46,9 @@ public class Build {
 	String startTime;
 	@JsonProperty(value="end_time")
 	String endTime;
+	
+	@OneToMany(cascade=CascadeType.REMOVE, mappedBy="build")
+	private List<FileInjection> fileInjections;
 	
 	public String getId() {
 		return id;
@@ -77,6 +86,13 @@ public class Build {
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
+	public List<FileInjection> getFileInjections() {
+		return fileInjections;
+	}
+	public void setFileInjections(List<FileInjection> fileInjections) {
+		this.fileInjections = fileInjections;
+	}
+	
 	
 	
 }
