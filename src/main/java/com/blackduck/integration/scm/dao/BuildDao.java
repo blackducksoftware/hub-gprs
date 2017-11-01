@@ -89,7 +89,6 @@ public class BuildDao {
 	 * @return
 	 */
 	public Build create(Build build) {
-		build.setCreatedOn(new Date());
 		return buildRepository.save(build);
 	}
 
@@ -100,6 +99,7 @@ public class BuildDao {
 	 * @return
 	 */
 	public Build update(Build build) {
+		build.setDateUpdated(new Date());
 		return buildRepository.save(build);
 	}
 

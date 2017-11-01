@@ -75,7 +75,13 @@ public class Build {
 	private Source source;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	Date createdOn;
+	@Column(columnDefinition="timestamp with time zone not null default now()")
+	private Date dateCreated;
+	
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition="timestamp with time zone not null default now()")
+	private Date dateUpdated;
 
 	@Column(nullable = false, unique = true)
 	private String pipeline;
@@ -112,14 +118,22 @@ public class Build {
 		this.pipeline = pipeline;
 	}
 
-	public Date getCreatedOn() {
-		return createdOn;
+	public Date getDateCreated() {
+		return dateCreated;
 	}
-
-	public void setCreatedOn(Date createdOn) {
-		this.createdOn = createdOn;
+	
+	public void setDateCreated(Date dateCreated) {
+		this.dateCreated = dateCreated;
 	}
-
+	
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+	
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
+	}
+	
 	public Source getSource() {
 		return source;
 	}

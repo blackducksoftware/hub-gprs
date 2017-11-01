@@ -22,12 +22,18 @@
 
 package com.blackduck.integration.scm.entity;
 
+import java.util.Date;
+
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 public class FileContent {
@@ -42,7 +48,16 @@ public class FileContent {
 	private String name;
 	
 	@Column(columnDefinition="bytea")
+	@Basic(fetch=FetchType.LAZY)
 	private byte[] content;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition="timestamp with time zone not null default now()")
+	private Date dateCreated;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition="timestamp with time zone not null default now()")
+	private Date dateUpdated;
 	
 	public long getId() {
 		return id;
@@ -52,6 +67,10 @@ public class FileContent {
 		this.id = id;
 	}
 	
+	/**
+	 * Returns the content of the file. Performance Note: file contents are lazily loaded. Invocation results in a database access.
+	 * @return
+	 */
 	public byte[] getContent() {
 		return content;
 	}
@@ -67,5 +86,23 @@ public class FileContent {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public Date getDateCreated() {
+		return dateCreated;
+	}
+	
+	public void setDateCreated(Date dateCreated) {
+		this.dateCreated = dateCreated;
+	}
+	
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+	
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
+	}
+	
+	
 	
 }

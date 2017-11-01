@@ -25,6 +25,7 @@ package com.blackduck.integration.scm.entity;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.persistence.Access;
@@ -35,6 +36,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 @Entity
@@ -50,6 +53,14 @@ public class Source {
 
 	@Column(nullable = false, unique = true)
 	private String name;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
+	private Date dateCreated;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
+	private Date dateUpdated;
 
 	@Transient
 	private Properties properties = new Properties();
@@ -86,8 +97,24 @@ public class Source {
 		this.id = id;
 	}
 
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
+	}
+
+	public Date getDateCreated() {
+		return dateUpdated;
+	}
+
+	public void setDateCreated(Date dateCreated) {
+		this.dateCreated = dateCreated;
+	}
+
 	@Access(AccessType.PROPERTY)
-	@Column(name = "properties", columnDefinition="text")
+	@Column(name = "properties", columnDefinition = "text")
 	public String getPropertiesAsText() {
 		try (StringWriter out = new StringWriter()) {
 			this.properties.store(out, null);

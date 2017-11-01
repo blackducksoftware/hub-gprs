@@ -22,12 +22,16 @@
 
 package com.blackduck.integration.scm.entity;
 
+import java.util.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 public class CiBuild {
@@ -40,6 +44,17 @@ public class CiBuild {
 
 	@Column(nullable = false)
 	private boolean violation;
+	
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition="timestamp with time zone not null default now()")
+	private Date dateCreated;
+	
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition="timestamp with time zone not null default now()")
+	private Date dateUpdated;
+
 
 	private boolean success;
 
@@ -84,5 +99,22 @@ public class CiBuild {
 	public void setFailure(boolean failure) {
 		this.failure = failure;
 	}
+	
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+	
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
+	}
+	
+	public Date getDateCreated() {
+		return dateCreated;
+	}
+	
+	public void setDateCreated(Date dateCreated) {
+		this.dateCreated = dateCreated;
+	}
+	
 
 }

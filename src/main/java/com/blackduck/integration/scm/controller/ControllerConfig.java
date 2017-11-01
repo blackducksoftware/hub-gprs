@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.blackduck.integration.scm.DeploymentService;
 import com.blackduck.integration.scm.dao.BuildDao;
+import com.blackduck.integration.scm.dao.FileDao;
 import com.blackduck.integration.scm.dao.SourceDao;
 
 @Configuration
@@ -16,6 +17,9 @@ public class ControllerConfig {
 	
 	@Inject
 	private BuildDao buildDao;
+	
+	@Inject
+	private FileDao fileDao;
 	
 	@Inject
 	private DeploymentService deploymentService;
@@ -33,5 +37,10 @@ public class ControllerConfig {
 	@Bean
 	public AuthController authController() {
 		return new AuthController();
+	}
+	
+	@Bean
+	public FileController fileController() {
+		return new FileController(fileDao);
 	}
 }
