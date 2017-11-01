@@ -1,21 +1,19 @@
 package com.blackduck.integration.scm.controller;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import javax.transaction.Transactional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -76,5 +74,13 @@ public class FileController {
 		List<FileContent> files = fileDao.listFileContents();
 		model.addAttribute("files", files);
 		return "files";
+	}
+
+	@DeleteMapping("/{id}")
+	@Transactional
+	public String deleteById(@PathVariable long id, Model model) {
+		fileDao.deleteFileContent(id);
+		model.addAttribute("message", "File deleted successfully.");
+		return listFiles(model);
 	}
 }

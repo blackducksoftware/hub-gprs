@@ -82,3 +82,19 @@ function deleteAndGoto(uriToDelete, messageDiv, gotoUrl) {
     });  
 }
 
+function replaceDocument(content){
+	var newDoc = document.open("text/html", "replace");
+	newDoc.write(content);
+	newDoc.close(); 
+}
+
+function deleteHtml(uriToDelete) {
+    $.ajax({
+        url     : uriToDelete,
+        type    : 'DELETE',
+        dataType: 'html',
+        success : replaceDocument,
+        error: replaceDocument
+    });  
+}
+

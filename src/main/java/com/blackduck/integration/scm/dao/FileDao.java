@@ -1,7 +1,6 @@
 package com.blackduck.integration.scm.dao;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import com.blackduck.integration.scm.entity.FileContent;
@@ -30,6 +29,10 @@ public class FileDao {
 			return Collections.unmodifiableList((List<FileContent>) fileContents);
 		else
 			return ImmutableList.copyOf(fileContents);
+	}
+
+	public void deleteFileContent(long id) {
+		fileContentRepository.delete(id);
 	}
 
 }

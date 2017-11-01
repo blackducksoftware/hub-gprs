@@ -13,7 +13,7 @@
 		<br/>
 		<table class="listTable">
 			<#list files as file>
-				<tr><td>${file.name}<a href="#" ><img src="/img/trash.svg" onclick="deleteAndGoto(encodeURI('/files/${file.id}?${_csrf.parameterName}=${_csrf.token}'), $('#messageDiv'), '/files')" ></a></td></tr>
+				<tr><td>${file.name}<a href="#" ><img src="/img/trash.svg" onclick="deleteHtml(encodeURI('/files/${file.id}?${_csrf.parameterName}=${_csrf.token}'))" ></a></td></tr>
 			</#list>
 		</table>
 		<br/>

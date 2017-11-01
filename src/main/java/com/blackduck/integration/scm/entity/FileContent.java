@@ -23,6 +23,7 @@
 package com.blackduck.integration.scm.entity;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -31,6 +32,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -58,6 +60,9 @@ public class FileContent {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(columnDefinition="timestamp with time zone not null default now()")
 	private Date dateUpdated;
+	
+	@OneToMany(targetEntity=FileInjection.class, mappedBy="fileContent", fetch=FetchType.LAZY)
+	private List<FileInjection> injections;
 	
 	public long getId() {
 		return id;
@@ -103,6 +108,13 @@ public class FileContent {
 		this.dateUpdated = dateUpdated;
 	}
 	
+	public List<FileInjection> getInjections() {
+		return injections;
+	}
+	
+	public void setInjections(List<FileInjection> injections) {
+		this.injections = injections;
+	}
 	
 	
 }
