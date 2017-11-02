@@ -158,14 +158,16 @@
 					    cloneDiv.attr('id','addFileDiv'+counter);
 					
 					    //Renaming inputs in  cloneDiv
+						$("[name='newFileContent']",cloneDiv).attr('id','newFileContent'+counter);
 					    $("[name='newFileContent']",cloneDiv).attr('name','newFileContent'+counter);
 					    $("[name='newFileTarget']",cloneDiv).attr('name','newFileTarget'+counter);
-						// Trigger a change event to populate the default target
-						$("[name='newFileContent*']",cloneDiv).trigger('change');
-						
+					
 					    //Append the new file form to wherever the button is
 					    $("#addFile").before(cloneDiv);
 					    cloneDiv.css("visibility", 'visible');
+					    
+    						// Trigger a change event to populate the default target
+						$("#newFileContent"+counter).trigger('change');
 					
 					    //Increment counter
 					    counter++;      
@@ -191,9 +193,9 @@
 	<table class="formTable">
 		<tr>
 			<td class="formFieldName">File:</td>
-			<td>	<select name="newFileContent">
+			<td>	<select name="newFileContent"  onchange="$(this).parents('table').find(':text')[0].value='~/'+$(this).find('option:selected').text()"> <#-- ;this.parent.$(':text').text('~/${file.name}') -->
 					<#list injectionCandidates as file>
-					<option value="${file.id}" onchange="this.parent.$(':text').text('~/${file.name}')">${file.name}</option>
+					<option value="${file.id}">${file.name}</option>
 					</#list>
 				</select>
 			</td>
