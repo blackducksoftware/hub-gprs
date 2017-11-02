@@ -137,7 +137,7 @@
 				<#-- Add new files -->
 				<br/>
 				<#if injectionCandidates?size != 0 >			
-					<p><button id="addFile" type="button">Add File</button></p>
+					<p><br/><a href="#" id="addFile"><img src="/img/plus.svg" height="20px" width="20px" style="left:20px"></a></p>
 				<#else> 
 					No <#if build?? && build.fileInjections?size gt 0 >additional </#if>files available to inject.
 				</#if>
@@ -193,7 +193,7 @@
 	<table class="formTable">
 		<tr>
 			<td class="formFieldName">File:</td>
-			<td>	<select name="newFileContent"  onchange="$(this).parents('table').find(':text')[0].value='~/'+$(this).find('option:selected').text()"> <#-- ;this.parent.$(':text').text('~/${file.name}') -->
+			<td>	<select name="newFileContent"  onchange="$(this).parents('table').find(':text')[0].value='~/'+$(this).find('option:selected').text()">
 					<#list injectionCandidates as file>
 					<option value="${file.id}">${file.name}</option>
 					</#list>
