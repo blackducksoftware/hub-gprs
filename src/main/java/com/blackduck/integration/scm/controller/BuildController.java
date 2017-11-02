@@ -24,8 +24,11 @@ package com.blackduck.integration.scm.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,13 +55,16 @@ import org.springframework.web.servlet.ModelAndView;
 import com.blackduck.integration.scm.BuildStatus;
 import com.blackduck.integration.scm.DeploymentService;
 import com.blackduck.integration.scm.dao.BuildDao;
+import com.blackduck.integration.scm.dao.FileDao;
 import com.blackduck.integration.scm.dao.SourceDao;
 import com.blackduck.integration.scm.entity.Build;
 import com.blackduck.integration.scm.entity.BuildType;
+import com.blackduck.integration.scm.entity.FileContent;
+import com.blackduck.integration.scm.entity.FileInjection;
 import com.blackduck.integration.scm.entity.ParamDefinition;
+import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.blackduck.integration.scm.entity.Source;
 import com.blackduck.integration.scm.entity.SourceType;
-import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
@@ -74,10 +80,14 @@ public class BuildController {
 
 	private final SourceDao sourceDao;
 
-	public BuildController(SourceDao sourceDao, BuildDao buildDao, DeploymentService deploymentService) {
+	private final FileDao fileDao;
+
+	public BuildController(SourceDao sourceDao, BuildDao buildDao, FileDao fileDao,
+			DeploymentService deploymentService) {
 		this.sourceDao = sourceDao;
 		this.buildDao = buildDao;
 		this.deploymentService = deploymentService;
+		this.fileDao = fileDao;
 
 	}
 
@@ -90,6 +100,7 @@ public class BuildController {
 	public String editBuildView(Model model) {
 		model.addAttribute("buildTypes", BuildType.values());
 		model.addAttribute("sources", sourceDao.list());
+		model.addAttribute("injectionCandidates", fileDao.listFileContents());
 
 		List<ParamDefinition> buildParams = Stream.of(SourceType.values())
 				.flatMap(type -> type.getBuildParameterDefinitions().stream()).collect(Collectors.toList());
@@ -145,6 +156,14 @@ public class BuildController {
 	public String getBuildById(@PathVariable long id, Model model) {
 		Build build = buildDao.findById(id);
 		model.addAttribute("build", build);
+		
+		//Get the files that could potentially be injected into the build
+		Stream<FileContent> fileContents = fileDao.listFileContents().stream();
+		//...this means ones that are not already injected
+		Set<Long> injectedFiles = build.getFileInjections().stream().map(FileInjection::getFileContent).map(FileContent::getId).collect(Collectors.toSet());
+		List<FileContent> injectionCandidates = fileContents.filter(file -> !injectedFiles.contains(file.getId())).collect(Collectors.toList());
+		
+		model.addAttribute("injectionCandidates", injectionCandidates);
 		return editBuildView(model);
 	}
 
@@ -195,6 +214,30 @@ public class BuildController {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
+	@ResponseBody
+	@PostMapping("/builds/{id}/injections")
+	public ResponseEntity<String> addFileInjection(@PathVariable long buildId, @RequestParam long fileId,
+			@RequestParam String targetPath) {
+		FileContent fileContent = fileDao.findById(fileId);
+		buildDao.newFileInjection(buildId, fileContent, targetPath);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+
+	@ResponseBody
+	@DeleteMapping("/builds/{buildId}/injections/{injectionId}")
+	public ResponseEntity<String> deleteInjectionById(@PathVariable long buildId, @PathVariable long injectionId) {
+		Build build = buildDao.findById(buildId);
+		Optional<FileInjection> injectionToDelete = build.getFileInjections().stream()
+				.filter(inj -> injectionId == inj.getId()).findFirst();
+		//Remove the injection from the build. Let JPA remove the orphan
+		if (!injectionToDelete.isPresent())
+			throw new IllegalArgumentException("File injection not found in build.");
+		build.getFileInjections().remove(injectionToDelete.get());
+		buildDao.update(build);
+		return new ResponseEntity<String>("{}", HttpStatus.NO_CONTENT);
+
+	}
+
 	@DeleteMapping("/builds/{id}")
 	@Transactional
 	public ResponseEntity<String> deleteById(@PathVariable long id) {
@@ -218,9 +261,10 @@ public class BuildController {
 		return mav;
 	}
 
-	private Properties extractParameters(BuildType buildType, SourceType sourceType, Map<String, String>params) {
+	private Properties extractParameters(BuildType buildType, SourceType sourceType, Map<String, String> params) {
 		Properties properties = new Properties();
-		Iterable<ParamDefinition> expectedBuildParams = Iterables.concat(buildType.getParams(), sourceType.getBuildParameterDefinitions());
+		Iterable<ParamDefinition> expectedBuildParams = Iterables.concat(buildType.getParams(),
+				sourceType.getBuildParameterDefinitions());
 		for (ParamDefinition paramDef : expectedBuildParams) {
 			String paramValue = params.get(paramDef.getName());
 			if (ParamType.TRUE_FALSE == paramDef.getType()) {

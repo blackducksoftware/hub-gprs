@@ -26,10 +26,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
@@ -39,6 +41,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -75,16 +78,18 @@ public class Build {
 	private Source source;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(columnDefinition="timestamp with time zone not null default now()")
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
 	private Date dateCreated;
-	
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(columnDefinition="timestamp with time zone not null default now()")
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
 	private Date dateUpdated;
 
 	@Column(nullable = false, unique = true)
 	private String pipeline;
+
+	@OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "build", orphanRemoval = true)
+	private List<FileInjection> fileInjections;
 
 	public long getId() {
 		return id;
@@ -121,19 +126,19 @@ public class Build {
 	public Date getDateCreated() {
 		return dateCreated;
 	}
-	
+
 	public void setDateCreated(Date dateCreated) {
 		this.dateCreated = dateCreated;
 	}
-	
+
 	public Date getDateUpdated() {
 		return dateUpdated;
 	}
-	
+
 	public void setDateUpdated(Date dateUpdated) {
 		this.dateUpdated = dateUpdated;
 	}
-	
+
 	public Source getSource() {
 		return source;
 	}
@@ -161,19 +166,19 @@ public class Build {
 	public String getProjectName() {
 		return projectName;
 	}
-	
+
 	public void setProjectName(String projectName) {
 		this.projectName = projectName;
 	}
-	
+
 	public String getVersionName() {
 		return versionName;
 	}
-	
+
 	public void setVersionName(String versionName) {
 		this.versionName = versionName;
 	}
-	
+
 	@Transient
 	private Properties properties = new Properties();
 
@@ -183,6 +188,14 @@ public class Build {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
+	}
+
+	public List<FileInjection> getFileInjections() {
+		return fileInjections;
+	}
+
+	public void setFileInjections(List<FileInjection> fileInjections) {
+		this.fileInjections = fileInjections;
 	}
 
 	/**

@@ -33,66 +33,67 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents a concourse build.
+ * 
  * @author ybronshteyn
  *
  */
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Build {
 	String id;
 	String team_name;
 	String name;
 	String status;
-	@JsonProperty(value="start_time")
+	@JsonProperty(value = "start_time")
 	String startTime;
-	@JsonProperty(value="end_time")
+	@JsonProperty(value = "end_time")
 	String endTime;
-	
-	@OneToMany(cascade=CascadeType.REMOVE, mappedBy="build")
-	private List<FileInjection> fileInjections;
-	
+
 	public String getId() {
 		return id;
 	}
+
 	public void setId(String id) {
 		this.id = id;
 	}
+
 	public String getTeam_name() {
 		return team_name;
 	}
+
 	public void setTeam_name(String team_name) {
 		this.team_name = team_name;
 	}
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getStatus() {
 		return status;
 	}
+
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
 	public String getStartTime() {
 		return startTime;
 	}
+
 	public void setStartTime(String startTime) {
 		this.startTime = startTime;
 	}
+
 	public String getEndTime() {
 		return endTime;
 	}
+
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
-	public List<FileInjection> getFileInjections() {
-		return fileInjections;
-	}
-	public void setFileInjections(List<FileInjection> fileInjections) {
-		this.fileInjections = fileInjections;
-	}
-	
-	
-	
+
 }

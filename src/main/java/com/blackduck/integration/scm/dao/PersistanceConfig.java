@@ -41,6 +41,9 @@ public class PersistanceConfig {
 
 	@Inject
 	private IFileContentRepository fileContentRepository;
+	
+	@Inject
+	private IFileInjectionRepository fileInjectionRepository;
 
 	@Bean
 	public SourceDao sourceDao() {
@@ -54,7 +57,7 @@ public class PersistanceConfig {
 
 	@Bean
 	public BuildDao buildDao() {
-		return new BuildDao(buildRepository);
+		return new BuildDao(buildRepository, fileInjectionRepository);
 	}
 
 	@Bean

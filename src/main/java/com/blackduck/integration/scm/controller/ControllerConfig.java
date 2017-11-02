@@ -31,7 +31,7 @@ public class ControllerConfig {
 	
 	@Bean
 	public BuildController buildController() {
-		return new BuildController(sourceDao, buildDao, deploymentService);
+		return new BuildController(sourceDao, buildDao, fileDao, deploymentService);
 	}
 	
 	@Bean

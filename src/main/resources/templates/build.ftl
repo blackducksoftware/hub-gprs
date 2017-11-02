@@ -113,15 +113,66 @@
 				</tr>
 				
 				</table>
-				<#if build??>
-					<h2>Files</h2>
-					<#list build.fileInjections as file>
-						${file.name} &#8594; ${file.target} <img src="/img/trash.svg" />
-					</#list>
-				</#if>
-				
+			
 		  </div>
 		</div>
+		
+		<div id="fileInjection" style="width:600px"  class="panel panel-default" >
+		  	<div class="panel-heading">
+	  			<h3 class="panel-title">File Injection</h3>
+  			</div>
+  			<div class="panel-body">
+				<#-- Show currently added files -->
+				<#if build??>
+					<table class="formTable">
+					<#list build.fileInjections as file>
+						<tr>
+						<td>${file.name}</td><td>&#8594;></td><td> ${file.target}</td><td><img src="/img/trash.svg" /></td>
+						</tr>
+					</#list>
+					</table>
+				<#else>
+					No file injections configured.
+				</#if>
+				<#-- Add new files -->
+				<br/>
+				<#if injectionCandidates?size != 0 >			
+					<p><button id="addFile" type="button">Add File</button></p>
+				<#else> 
+					No <#if build?? && build.fileInjections?size gt 0 >additional </#if>files available to inject.
+				</#if>
+					
+			</div>
+		</div>
+		
+				<script type="text/javascript">
+				$(document).ready(function(){
+					var counter = 1;
+					
+					$("#addFile").click(function(){
+					    //Let's make a copy to work with
+					    var originalDiv = $("#addFileDiv");
+					    var cloneDiv = originalDiv.clone(); 
+					
+					    //Renaming cloneDiv
+					    cloneDiv.attr('id','addFileDiv'+counter);
+					
+					    //Renaming inputs in  cloneDiv
+					    $("[name='newFileContent']",cloneDiv).attr('name','newFileContent'+counter);
+					    $("[name='newFileTarget']",cloneDiv).attr('name','newFileTarget'+counter);
+						// Trigger a change event to populate the default target
+						$("[name='newFileContent*']",cloneDiv).trigger('change');
+						
+					    //Append the new file form to wherever the button is
+					    $("#addFile").before(cloneDiv);
+					    cloneDiv.css("visibility", 'visible');
+					
+					    //Increment counter
+					    counter++;      
+					});
+				});
+				</script>
+				
 
 </form>
 <button name="submitButton"
@@ -134,3 +185,22 @@
 		});
 	}
 </script>
+
+<#-- Prototype of file information form -->
+<div id="addFileDiv" style="visibility: hidden; border-style: solid; border-radius: 4px; border-color: #cccccc; border-width: 1px; margin: 5px">	
+	<table class="formTable">
+		<tr>
+			<td class="formFieldName">File:</td>
+			<td>	<select name="newFileContent">
+					<#list injectionCandidates as file>
+					<option value="${file.id}" onchange="this.parent.$(':text').text('~/${file.name}')">${file.name}</option>
+					</#list>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="formFieldName">Target:</td>
+			<td> <input type="text" value="~" name="newFileTarget" class="param"/>
+		</tr>
+	</table>		
+</div>

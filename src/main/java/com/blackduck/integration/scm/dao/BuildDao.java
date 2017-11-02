@@ -22,6 +22,9 @@
 
 package com.blackduck.integration.scm.dao;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -31,14 +34,21 @@ import java.util.stream.StreamSupport;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.blackduck.integration.scm.entity.Build;
+import com.blackduck.integration.scm.entity.FileContent;
+import com.blackduck.integration.scm.entity.FileInjection;
 
 public class BuildDao {
 
 	private final IBuildRepository buildRepository;
 
-	public BuildDao(IBuildRepository buildRepository) {
+	private final IFileInjectionRepository fileInjectionRepository;
+
+	public BuildDao(IBuildRepository buildRepository, IFileInjectionRepository fileInjectionRepository) {
 		this.buildRepository = buildRepository;
+		this.fileInjectionRepository = fileInjectionRepository;
 	}
 
 	public Stream<Build> getAll() {
@@ -75,7 +85,6 @@ public class BuildDao {
 		return findBySourceId(sourceId).collect(Collectors.toList());
 	}
 
-	
 	private Stream<Build> findBySourceId(long sourceId) {
 		Stream<Build> result = buildRepository.findBySourceId(sourceId);
 		return result == null ? Stream.empty() : result;
@@ -109,4 +118,23 @@ public class BuildDao {
 	public void deleteById(long id) {
 		buildRepository.delete(id);
 	}
+
+	/**
+	 * Creates a new file injection
+	 */
+	public FileInjection newFileInjection(long buildId, FileContent fileContent, String targetPath) {
+		Build build = findById(buildId);
+		if (build == null) {
+			throw new IllegalArgumentException("Non-existent build ID: " + buildId);
+		}
+		if (StringUtils.isBlank(targetPath)) {
+			throw new IllegalArgumentException("Target path required.");
+		}
+		FileInjection injection = new FileInjection();
+		injection.setFileContent(fileContent);
+		injection.setTargetPath(targetPath);
+		injection.setBuild(build);
+		return fileInjectionRepository.save(injection);
+	}
+
 }

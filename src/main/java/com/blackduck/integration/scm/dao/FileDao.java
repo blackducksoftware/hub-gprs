@@ -23,8 +23,14 @@ public class FileDao {
 		return fileContentRepository.save(fileContent);
 	}
 
+	/**
+	 * @return All uploaded files (FileContent), or, if none are found, an empty list.
+	 */
 	public List<FileContent> listFileContents() {
 		Iterable<FileContent> fileContents = fileContentRepository.findAll();
+		if (fileContents == null) {
+			return Collections.emptyList();
+		}
 		if (fileContents instanceof List)
 			return Collections.unmodifiableList((List<FileContent>) fileContents);
 		else
@@ -33,6 +39,10 @@ public class FileDao {
 
 	public void deleteFileContent(long id) {
 		fileContentRepository.delete(id);
+	}
+
+	public FileContent findById(long id) {
+		return fileContentRepository.findOne(id);
 	}
 
 }

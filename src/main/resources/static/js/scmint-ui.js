@@ -31,6 +31,11 @@ function loadPage(div, url, showLoader, onComplete) {
 	div.load(url, onComplete);
 }
 
+function loadInModal(url, title, onComplete) {
+	$("#modalView").modal('show');
+	loadPage($("#modalViewBody"), url, true, onComplete);
+}
+
 function submitForm(form, messageDiv) {
     $.ajax({
         url     : $(form).attr('action'),

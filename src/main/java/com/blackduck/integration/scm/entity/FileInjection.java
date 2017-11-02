@@ -33,11 +33,11 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
-@Table(indexes = { @Index(name = "fileInjection_build_idx", columnList="build_id", unique = false) })
+@Table(indexes = { @Index(name = "fileInjection_build_idx", columnList = "build_id", unique = false) })
 public class FileInjection {
-	
-	private static final String sequenceName="seq_file_injection_id";
-	
+
+	private static final String sequenceName = "seq_file_injection_id";
+
 	@Id
 	@GeneratedValue(generator = sequenceName, strategy = GenerationType.SEQUENCE)
 	@SequenceGenerator(name = sequenceName, sequenceName = sequenceName, allocationSize = 1)
@@ -46,26 +46,41 @@ public class FileInjection {
 	@ManyToOne
 	private Build build;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	// The eager fetch is just for the metadata fields. The actual contents of the upload
+	// are fetched lazily inside FileContent.
+	@ManyToOne(fetch = FetchType.EAGER)
 	private FileContent fileContent;
 
 	private String targetPath;
-	
-	public Build getBuild() {	
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public Build getBuild() {
 		return build;
 	}
+
 	public void setBuild(Build build) {
 		this.build = build;
 	}
+
 	public FileContent getFileContent() {
 		return fileContent;
 	}
+
 	public void setFileContent(FileContent fileContent) {
 		this.fileContent = fileContent;
 	}
+
 	public String getTargetPath() {
 		return targetPath;
 	}
+
 	public void setTargetPath(String targetPath) {
 		this.targetPath = targetPath;
 	}

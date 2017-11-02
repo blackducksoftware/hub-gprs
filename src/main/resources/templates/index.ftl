@@ -16,5 +16,8 @@
 		</p>
 
 	</div>
+	
+	<div id="modalView">
+	</div>
 </body>
 </html>
