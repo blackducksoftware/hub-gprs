@@ -88,7 +88,7 @@ public class Build {
 	@Column(nullable = false, unique = true)
 	private String pipeline;
 
-	@OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "build", orphanRemoval = true)
+	@OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "build", orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<FileInjection> fileInjections;
 
 	public long getId() {

@@ -22,6 +22,10 @@
 
 package com.blackduck.integration.scm.entity;
 
+import java.util.Date;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -31,6 +35,8 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(indexes = { @Index(name = "fileInjection_build_idx", columnList = "build_id", unique = false) })
@@ -46,12 +52,20 @@ public class FileInjection {
 	@ManyToOne
 	private Build build;
 
-	// The eager fetch is just for the metadata fields. The actual contents of the upload
-	// are fetched lazily inside FileContent.
-	@ManyToOne(fetch = FetchType.EAGER)
+	// The eager fetch is just for the metadata fields. The actual contents of the
+	// upload are fetched lazily inside FileContent.
+	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.DETACH)
 	private FileContent fileContent;
 
 	private String targetPath;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
+	private Date dateCreated;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
+	private Date dateUpdated;
 
 	public long getId() {
 		return id;
@@ -83,6 +97,22 @@ public class FileInjection {
 
 	public void setTargetPath(String targetPath) {
 		this.targetPath = targetPath;
+	}
+
+	public Date getDateCreated() {
+		return dateCreated;
+	}
+
+	public void setDateCreated(Date dateCreated) {
+		this.dateCreated = dateCreated;
+	}
+
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
 	}
 
 }

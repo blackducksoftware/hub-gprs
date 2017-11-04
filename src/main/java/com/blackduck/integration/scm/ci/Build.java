@@ -22,12 +22,6 @@
 
 package com.blackduck.integration.scm.ci;
 
-import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.OneToMany;
-
-import com.blackduck.integration.scm.entity.FileInjection;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

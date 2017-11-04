@@ -22,7 +22,6 @@
 
 package com.blackduck.integration.scm.dao;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;

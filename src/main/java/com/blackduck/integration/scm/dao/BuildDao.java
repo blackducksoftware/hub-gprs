@@ -22,9 +22,6 @@
 
 package com.blackduck.integration.scm.dao;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -98,6 +95,9 @@ public class BuildDao {
 	 * @return
 	 */
 	public Build create(Build build) {
+		Date createDate = new Date();
+		build.setDateCreated(createDate);
+		build.setDateUpdated(createDate);
 		return buildRepository.save(build);
 	}
 
@@ -134,6 +134,9 @@ public class BuildDao {
 		injection.setFileContent(fileContent);
 		injection.setTargetPath(targetPath);
 		injection.setBuild(build);
+		Date dateCreated = new Date();
+		injection.setDateCreated(dateCreated);
+		injection.setDateUpdated(dateCreated);
 		return fileInjectionRepository.save(injection);
 	}
 

@@ -51,7 +51,7 @@ public class PipelineFactory {
 		}
 	}
 
-	public  String generatePipelineConfig (HashMap<String, String> values) {
+	public  String generatePipelineConfig (long buildId, HashMap<String, String> values) {
 		try(StringWriter out = new StringWriter()){
 			this.template.process(values, out);
 			return out.toString();

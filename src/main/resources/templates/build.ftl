@@ -127,7 +127,7 @@
 					<table class="formTable">
 					<#list build.fileInjections as file>
 						<tr>
-						<td>${file.name}</td><td>&#8594;></td><td> ${file.target}</td><td><img src="/img/trash.svg" /></td>
+						<td>${file.fileContent.name}</td><td>&#8594;</td><td style="font-family: Courier New, monospace"> ${file.targetPath}</td><td><img src="/img/trash.svg" /></td>
 						</tr>
 					</#list>
 					</table>
@@ -188,7 +188,7 @@
 	}
 </script>
 
-<#-- Prototype of file information form -->
+<#-- Prototype of new file injection information form -->
 <div id="addFileDiv" style="visibility: hidden; border-style: solid; border-radius: 4px; border-color: #cccccc; border-width: 1px; margin: 5px">	
 	<table class="formTable">
 		<tr>

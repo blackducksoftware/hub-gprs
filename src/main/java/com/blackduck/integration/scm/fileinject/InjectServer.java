@@ -22,8 +22,22 @@
 
 package com.blackduck.integration.scm.fileinject;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.blackduck.integration.scm.dao.BuildDao;
+import com.blackduck.integration.scm.dao.FileDao;
+import com.blackduck.integration.scm.entity.FileInjection;
+import com.blackduck.integration.scm.fileinject.InjectFileArchiveResource.FileInjectionMetadata;
+
 import io.undertow.Undertow;
+import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;
 
@@ -37,15 +51,47 @@ import io.undertow.server.handlers.resource.ResourceManager;
  * @author ybronshteyn
  */
 public class InjectServer {
+
+	static final String BUILD_FILE_ARCHIVE_PATH_PREFIX = "/buildFiles/";
+
 	private final int injectPort = 13666;
 
 	private final Undertow injectServer;
 
-	public InjectServer() {
-		ResourceManager resourceManager = new ClassPathResourceManager(this.getClass().getClassLoader(),
+	private final BuildDao buildDao;
+
+	private final FileDao fileDao;
+
+	public InjectServer(BuildDao buildDao, FileDao fileDao) {
+		this.buildDao = buildDao;
+		this.fileDao = fileDao;
+
+		// Create a handler for static resources (e.g. build script)
+		ResourceManager staticFileResourceManager = new ClassPathResourceManager(this.getClass().getClassLoader(),
 				"build_resources/");
-		injectServer = Undertow.builder().addHttpListener(injectPort, "0.0.0.0")
-				.setHandler(new ResourceHandler(resourceManager)).build();
+		ResourceHandler staticFileResourceHandler = new ResourceHandler(staticFileResourceManager);
+
+		// Create a handler to handle injected resources:
+		ResourceHandler injectedFileResourceHandler = new ResourceHandler(
+				(exchange, path) -> getInjectedFileResource(path));
+
+		// Create a path handler to delegate to the above handlers:
+		PathHandler pathHandler = new PathHandler(staticFileResourceHandler);
+		pathHandler.addPrefixPath(BUILD_FILE_ARCHIVE_PATH_PREFIX, injectedFileResourceHandler);
+
+		// Set up the server
+		injectServer = Undertow.builder().addHttpListener(injectPort, "0.0.0.0").setHandler(pathHandler).build();
+
+	}
+
+	@Transactional
+	private Resource getInjectedFileResource(String path) {
+		long buildId = Long.parseLong(StringUtils.substringAfter(path, "/"));
+		List<FileInjection> fileInjections = buildDao.findById(buildId).getFileInjections();
+		List<FileInjectionMetadata> fileInjectionsMetadata = fileInjections.stream()
+				.map(fileInjection -> new FileInjectionMetadata(fileInjection.getTargetPath(),
+						fileInjection.getFileContent().getId(), fileInjection.getDateUpdated())).collect(Collectors.toList());
+		return new InjectFileArchiveResource(buildId, fileInjectionsMetadata, fileDao);
 	}
 
 	public void start() {

@@ -28,13 +28,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -136,9 +136,40 @@ public class BuildController {
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
 
-		deploymentService.deploy(build);
-		buildDao.create(build);
+		Build createdBuild = buildDao.create(build);
+		createNewFileInjections(createdBuild.getId(), allParameters);
+		try {
+			deploymentService.deploy(build);
+		} catch (Throwable t) {
+			logger.error("Unable to deploy new build.",t);
+			//Delete the build
+			buildDao.deleteById(createdBuild.getId());
+			throw t;
+		}
+		
 		return new ResponseEntity<>("{}", HttpStatus.CREATED);
+	}
+
+	/**
+	 * Extracts all file injections submitted as part of a build edit and creates the injections.
+	 * Note: build must exist prior to invocation.
+	 * @param allParameters
+	 * @return
+	 */
+	private void createNewFileInjections(long buildId, Map<String, String> allParameters) {
+		final String contentAttributePrefix = "newFileContent";
+		Set<String> newInjectionIndices = allParameters.keySet().stream()
+				.filter(key -> StringUtils.startsWith(key, contentAttributePrefix))
+				//Remove the prefix to get the index
+				.map(str->StringUtils.substringAfter(str, contentAttributePrefix))
+				.collect(Collectors.toSet());
+		
+		for (String index : newInjectionIndices) {
+			String target = allParameters.get("newFileTarget" + index);
+			long fileContentId = Long.parseLong(allParameters.get(contentAttributePrefix + index));
+			FileContent fileContent = fileDao.findById(fileContentId);
+			buildDao.newFileInjection(buildId, fileContent, target);
+		}
 	}
 
 	@GetMapping("/builds")
@@ -156,13 +187,15 @@ public class BuildController {
 	public String getBuildById(@PathVariable long id, Model model) {
 		Build build = buildDao.findById(id);
 		model.addAttribute("build", build);
-		
-		//Get the files that could potentially be injected into the build
+
+		// Get the files that could potentially be injected into the build
 		Stream<FileContent> fileContents = fileDao.listFileContents().stream();
-		//...this means ones that are not already injected
-		Set<Long> injectedFiles = build.getFileInjections().stream().map(FileInjection::getFileContent).map(FileContent::getId).collect(Collectors.toSet());
-		List<FileContent> injectionCandidates = fileContents.filter(file -> !injectedFiles.contains(file.getId())).collect(Collectors.toList());
-		
+		// ...this means ones that are not already injected
+		Set<Long> injectedFiles = build.getFileInjections().stream().map(FileInjection::getFileContent)
+				.map(FileContent::getId).collect(Collectors.toSet());
+		List<FileContent> injectionCandidates = fileContents.filter(file -> !injectedFiles.contains(file.getId()))
+				.collect(Collectors.toList());
+
 		model.addAttribute("injectionCandidates", injectionCandidates);
 		return editBuildView(model);
 	}
@@ -208,7 +241,8 @@ public class BuildController {
 		build.setVersionName(Strings.emptyToNull(versionName));
 
 		// Update the build in DB to stop monitoring it
-		buildDao.update(build);
+		Build updatedBuild = buildDao.update(build);
+		createNewFileInjections(updatedBuild.getId(), allParameters);
 		deploymentService.undeploy(oldPipelineName);
 		deploymentService.deploy(build);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -229,7 +263,7 @@ public class BuildController {
 		Build build = buildDao.findById(buildId);
 		Optional<FileInjection> injectionToDelete = build.getFileInjections().stream()
 				.filter(inj -> injectionId == inj.getId()).findFirst();
-		//Remove the injection from the build. Let JPA remove the orphan
+		// Remove the injection from the build. Let JPA remove the orphan
 		if (!injectionToDelete.isPresent())
 			throw new IllegalArgumentException("File injection not found in build.");
 		build.getFileInjections().remove(injectionToDelete.get());

@@ -89,7 +89,8 @@
 						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}",
 						"PROJECT_BUILD_COMMAND": "${build_command}",
 						"HUB_URL": "${hub_url}",
-						"HUB_DETECT_ARGS": "${args}"
+						"HUB_DETECT_ARGS": "${args}",
+						"BUILD_ID": "${build_id}"
 					},
 					"on_failure": {
 						"put": "codebase-pr",
