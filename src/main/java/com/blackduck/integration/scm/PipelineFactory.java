@@ -28,6 +28,9 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 
+import org.apache.commons.collections4.Transformer;
+import org.apache.commons.collections4.map.DefaultedMap;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -51,11 +54,16 @@ public class PipelineFactory {
 		}
 	}
 
-	public  String generatePipelineConfig (long buildId, HashMap<String, String> values) {
-		try(StringWriter out = new StringWriter()){
-			this.template.process(values, out);
+	public String generatePipelineConfig(long buildId, HashMap<String, String> values) {
+		Transformer<String, String> supplementalValueInjector = (key)->{
+			if ("build_id".equals(key)) return Long.toString(buildId);
+			else return null;
+		};
+		
+		try (StringWriter out = new StringWriter()) {
+			this.template.process(DefaultedMap.defaultedMap(values, supplementalValueInjector), out);
 			return out.toString();
-		}catch (IOException | TemplateException e) {
+		} catch (IOException | TemplateException e) {
 			throw new IllegalStateException("Unable to produce CI pipeline", e);
 		}
 	}

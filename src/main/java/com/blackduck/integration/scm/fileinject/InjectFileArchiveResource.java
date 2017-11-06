@@ -24,11 +24,16 @@ package com.blackduck.integration.scm.fileinject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -39,6 +44,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blackduck.integration.scm.dao.FileDao;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
@@ -181,7 +188,11 @@ public class InjectFileArchiveResource implements Resource {
 	@Transactional
 	public void serve(Sender sender, HttpServerExchange exchange, IoCallback completionCallback) {
 		boolean success = false;
-		try (SenderOutputStream sos = new SenderOutputStream(sender); ZipOutputStream zos = new ZipOutputStream(sos)) {
+		//Sort the injections by target
+		List<FileInjectionMetadata> sortedInjections = new ArrayList<>(fileInjections);
+		Collections.sort(sortedInjections, Comparator.comparing(FileInjectionMetadata::getTargetPath));
+		exchange.startBlocking();
+		try (OutputStream sos = exchange.getOutputStream(); ZipOutputStream zos = new ZipOutputStream(sos)) {		
 			for (FileInjectionMetadata fileInjection : fileInjections) {
 				ZipEntry entry = new ZipEntry(fileInjection.getTargetPath());
 				zos.putNextEntry(entry);
@@ -191,13 +202,17 @@ public class InjectFileArchiveResource implements Resource {
 				zos.write(fileContent);
 				zos.closeEntry();
 			}
-			sos.flush();
 			success = true;
 		} catch (IOException e) {
 			logger.error("Unable to zip and send file contents", e);
-			completionCallback.onException(exchange, sender, e);
+			exchange.setStatusCode(500);
+			exchange.setReasonPhrase("Unable to zip and send file contents");
+			exchange.endExchange();
 		}
-		if (success) completionCallback.onComplete(exchange, sender);
+		if (success) {
+			exchange.setStatusCode(200);
+			exchange.endExchange();
+		}
 
 	}
 }

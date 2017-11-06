@@ -127,7 +127,7 @@
 					<table class="formTable">
 					<#list build.fileInjections as file>
 						<tr>
-						<td>${file.fileContent.name}</td><td>&#8594;</td><td style="font-family: Courier New, monospace"> ${file.targetPath}</td><td><img src="/img/trash.svg" /></td>
+						<td>${file.fileContent.name}</td><td>&#8594;</td><td style="font-family: Courier New, monospace"> ${file.targetPath}</td><td><img src="/img/trash.svg" onclick="deleteAndGoto(encodeURI('/builds/${build.id}/injections/${file.id}?${_csrf.parameterName}=${_csrf.token}'), $('#messageDiv'), '/builds/${build.id}')" /></td>
 						</tr>
 					</#list>
 					</table>
