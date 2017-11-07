@@ -32,7 +32,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -40,6 +42,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +122,7 @@ public class InjectFileArchiveResource implements Resource {
 
 	@Override
 	public String getContentType(MimeMappings mimeMappings) {
-		return "application/zip";
+		return "application/octet-stream";
 	}
 
 	@Override
@@ -187,20 +192,48 @@ public class InjectFileArchiveResource implements Resource {
 	@Override
 	@Transactional
 	public void serve(Sender sender, HttpServerExchange exchange, IoCallback completionCallback) {
+		//Here, we build a tarball of all the files to be inject. The tarball will be extracted
+		//in the root directory of the build environment.
 		boolean success = false;
-		//Sort the injections by target
+		// Sort the injections by target
 		List<FileInjectionMetadata> sortedInjections = new ArrayList<>(fileInjections);
 		Collections.sort(sortedInjections, Comparator.comparing(FileInjectionMetadata::getTargetPath));
 		exchange.startBlocking();
-		try (OutputStream sos = exchange.getOutputStream(); ZipOutputStream zos = new ZipOutputStream(sos)) {		
+
+		try (OutputStream sos = exchange.getOutputStream();
+				TarArchiveOutputStream tos = new TarArchiveOutputStream(sos)) {
+
+			tos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
+			tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+			// Create an entry for every child directory not already created
+			Set<String> createdDirectories = new HashSet<>();
+			// Create parent directory entries for all items.
+			String curInjectionDirectory;
 			for (FileInjectionMetadata fileInjection : fileInjections) {
-				ZipEntry entry = new ZipEntry(fileInjection.getTargetPath());
-				zos.putNextEntry(entry);
+				//First, 
+				curInjectionDirectory = StringUtils.substringBeforeLast(fileInjection.getTargetPath(), "/") + "/";
+				String closestExistingParentDirectory = "/";
+				while (!closestExistingParentDirectory.equals(curInjectionDirectory)) {
+					String remainingToCreate = StringUtils.substringAfter(curInjectionDirectory + "",
+							closestExistingParentDirectory);
+					String newDirectory = StringUtils.substringBefore(remainingToCreate, "/");
+					closestExistingParentDirectory = closestExistingParentDirectory + newDirectory + "/";
+					if (!createdDirectories.contains(closestExistingParentDirectory)) {
+						TarArchiveEntry dirEntry = new TarArchiveEntry(closestExistingParentDirectory);
+						tos.putArchiveEntry(dirEntry);
+						tos.closeArchiveEntry();
+						createdDirectories.add(closestExistingParentDirectory);
+					}
+				}
+
 				// Content must be lazy-loaded in a transaction, so it won't be available from
 				// the injections.
 				byte[] fileContent = fileDao.findById(fileInjection.getFileContentId()).getContent();
-				zos.write(fileContent);
-				zos.closeEntry();
+				TarArchiveEntry entry = new TarArchiveEntry(fileInjection.getTargetPath());
+				entry.setSize(fileContent.length);
+				tos.putArchiveEntry(entry);
+				tos.write(fileContent);
+				tos.closeArchiveEntry();
 			}
 			success = true;
 		} catch (IOException e) {
@@ -210,7 +243,6 @@ public class InjectFileArchiveResource implements Resource {
 			exchange.endExchange();
 		}
 		if (success) {
-			exchange.setStatusCode(200);
 			exchange.endExchange();
 		}
 
