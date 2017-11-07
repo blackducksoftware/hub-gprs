@@ -110,15 +110,14 @@ public class BuildController {
 
 	@PreAuthorize("ROLE_codescanner")
 	@PostMapping("/builds")
-	@ResponseBody
-	public ResponseEntity<String> deployNewBuild(@RequestParam(required = true, name = "source_id") long sourceId,
+	public String deployNewBuild(@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,
 			@RequestParam(required = true, name = "build_command") String buildCommand,
 			@RequestParam(required = true, name = "build_image") String buildImage,
 			@RequestParam(required = true, name = "build_image_tag") String buildImageTag,
 			@RequestParam(required = false, name = "project_name") String projectName,
 			@RequestParam(required = false, name = "version_name") String versionName,
-			@RequestParam Map<String, String> allParameters) {
+			@RequestParam Map<String, String> allParameters, Model model) {
 		Source source = sourceDao.findById(sourceId);
 		if (source == null) {
 			throw new IllegalArgumentException("Invalids source ID: " + sourceId);
@@ -147,7 +146,7 @@ public class BuildController {
 			throw t;
 		}
 		
-		return new ResponseEntity<>("{}", HttpStatus.CREATED);
+		return getBuilds(model);
 	}
 
 	/**
@@ -213,8 +212,7 @@ public class BuildController {
 
 	@PreAuthorize("ROLE_codescanner")
 	@PutMapping("/builds/{id}")
-	@ResponseBody
-	public ResponseEntity<String> applyBuildEdits(@PathVariable long id,
+	public String applyBuildEdits(@PathVariable long id,
 			@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,
 			@RequestParam(required = true, name = "build_command") String buildCommand,
@@ -222,7 +220,7 @@ public class BuildController {
 			@RequestParam(required = true, name = "build_image_tag") String buildImageTag,
 			@RequestParam(required = false, name = "project_name") String projectName,
 			@RequestParam(required = false, name = "version_name") String versionName,
-			@RequestParam Map<String, String> allParameters) {
+			@RequestParam Map<String, String> allParameters, Model model) {
 
 		Build build = buildDao.findById(id);
 		String oldPipelineName = build.getPipeline();
@@ -245,7 +243,7 @@ public class BuildController {
 		createNewFileInjections(updatedBuild.getId(), allParameters);
 		deploymentService.undeploy(oldPipelineName);
 		deploymentService.deploy(build);
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		return getBuilds(model);
 	}
 
 	@ResponseBody
@@ -274,7 +272,7 @@ public class BuildController {
 
 	@DeleteMapping("/builds/{id}")
 	@Transactional
-	public ResponseEntity<String> deleteById(@PathVariable long id) {
+	public String deleteById(@PathVariable long id, Model model) {
 		Build build = buildDao.findById(id);
 		try {
 			deploymentService.undeploy(build.getPipeline());
@@ -282,13 +280,12 @@ public class BuildController {
 			logger.error("Unable to undeploy pipeline " + build.getPipeline() + " (build " + id + ")", t);
 		}
 		buildDao.deleteById(id);
-		return new ResponseEntity<String>("{}", HttpStatus.NO_CONTENT);
+		return getBuilds(model);
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ModelAndView handleException(HttpServletRequest req, Exception ex) {
 		ModelAndView mav = new ModelAndView("error");
-		mav.addObject("hideNavbar", "true");
 		mav.addObject("exception", ex);
 		mav.addObject("error", ex.getClass().getSimpleName());
 		mav.addObject("message", ex.getMessage());

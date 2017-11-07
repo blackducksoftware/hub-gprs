@@ -13,7 +13,6 @@
 	<input type="hidden" name="${_csrf.parameterName}"
 		value="${_csrf.token}" />
 
-
 	<table class="formTable">
 		<tr>
 			<td class="formFieldName">Source:</td>
@@ -127,7 +126,7 @@
 					<table class="formTable">
 					<#list build.fileInjections as file>
 						<tr>
-						<td>${file.fileContent.name}</td><td>&#8594;</td><td style="font-family: Courier New, monospace"> ${file.targetPath}</td><td><img src="/img/trash.svg" onclick="deleteAndGoto(encodeURI('/builds/${build.id}/injections/${file.id}?${_csrf.parameterName}=${_csrf.token}'), $('#messageDiv'), '/builds/${build.id}')" /></td>
+						<td>${file.fileContent.name}</td><td>&#8594;</td><td style="font-family: Courier New, monospace"> ${file.targetPath}</td><td><a href="#" onclick="deleteAndGoto(encodeURI('/builds/${build.id}/injections/${file.id}?${_csrf.parameterName}=${_csrf.token}'), $('#messageDiv'), '/builds/${build.id}')"><img src="/img/trash.svg" /></a></td>
 						</tr>
 					</#list>
 					</table>
@@ -178,7 +177,7 @@
 
 </form>
 <button name="submitButton"
-	onclick="submitFormAndGoto($('#newDeploymentForm'), $('#messageDiv'),'/builds')">Submit</button>
+	onclick="submitForm($('#newDeploymentForm'), $('#messageDiv'))">Submit</button>
 <#-- If no image is specified (from an existing build), set the image and tag boxes to the value corresponding to the default build type-->	
 <script type="text/javascript">
 	if (!$('#build_image').val()){

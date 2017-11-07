@@ -37,18 +37,25 @@ function loadInModal(url, title, onComplete) {
 }
 
 function submitForm(form, messageDiv) {
-    $.ajax({
-        url     : $(form).attr('action'),
-        type    : $(form).attr('method'),
-        data    : $(form).serialize(),
-        dataType: 'json',
-        success : function( data ) {
-             messageDiv.html('Great success!');
-        },
-        error   : function( xhr, err ) {
-        		messageDiv.html(xhr.responseJSON.message != null ?xhr.responseJSON.message :  xhr.responseJSON.exception);    
-        }
-    });    
+	$.ajax({
+				url : $(form).attr('action'),
+				type : $(form).attr('method'),
+				data : $(form).serialize(),
+				dataType : 'json',
+				success : function(data) {
+					replaceDocument(data);
+				},
+				error : function(xhr, err) {
+					var type = xhr.getResponseHeader("Content-Type");
+					if (type.startsWith("application/json")) {
+						messageDiv
+								.html(xhr.responseJSON.message != null ? xhr.responseJSON.message
+										: xhr.responseJSON.exception);
+					} else {
+						replaceDocument(xhr.responseText);
+					}
+				}
+			});
 }
 
 
