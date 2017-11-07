@@ -29,29 +29,40 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PersistanceConfig {
-	
+
 	@Inject
 	private ISourceRepository sourceRepository;
-	
+
 	@Inject
 	private IBuildRepository buildRepository;
-	
-	@Inject 
+
+	@Inject
 	private ICiBuildRepository ciBuildRepository;
+
+	@Inject
+	private IFileContentRepository fileContentRepository;
 	
+	@Inject
+	private IFileInjectionRepository fileInjectionRepository;
+
 	@Bean
 	public SourceDao sourceDao() {
 		return new SourceDao(sourceRepository);
 	}
-	
-	@Bean
+
+	@Bean	
 	public CiBuildDao ciBuildDao() {
 		return new CiBuildDao(ciBuildRepository);
 	}
-	
+
 	@Bean
 	public BuildDao buildDao() {
-		return new BuildDao(buildRepository);
+		return new BuildDao(buildRepository, fileInjectionRepository);
 	}
-	
+
+	@Bean
+	public FileDao fileDao() {
+		return new FileDao(fileContentRepository);
+	}
+
 }

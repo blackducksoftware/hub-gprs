@@ -85,31 +85,31 @@ public class SourceController {
 	}
 
 	@DeleteMapping("/sources/{id}")
-	@ResponseBody
 	@Transactional
-	public ResponseEntity<String> deleteSource(@PathVariable long id, Model model) {
+	public String deleteSource(@PathVariable long id, Model model) {
 		if (buildDao.findAnyBySourceId(id).isPresent()) {
-			throw new IllegalStateException("Unable to delete SCM. Please delete any monitored repositories first.");
+			model.addAttribute("message", "Unable to delete SCM. Please delete any repositories on it first.");
+			return getSources(model);
 		} else {
 			sourceDao.delete(id);
-			return new ResponseEntity<>("{}", HttpStatus.OK);
+			return getSources(model);
 		}
 
 	}
 
-	@PostMapping(path = "/sources", produces = "application/json")
-	public ResponseEntity<String> createSource(@RequestParam String name, @RequestParam String type,
+	@PostMapping("/sources")
+	public String createSource(@RequestParam String name, @RequestParam String type,
 			@RequestParam Map<String, String> allRequestParams, Model model) {
 		Source source = new Source();
 		source.setName(name);
 		source.setType(SourceType.valueOf(StringUtils.upperCase(type)));
 		setSourceTypeParamsFromRequest(source, allRequestParams);
 		sourceDao.create(source);
-		return new ResponseEntity<>("{}", HttpStatus.CREATED);
+		return getSources(model);
 	}
 
-	@PutMapping(path = "/sources/{id}", produces = "application/json")
-	public ResponseEntity<String> updateSource(@PathVariable long id, @RequestParam String name,
+	@PutMapping("/sources/{id}")
+	public String updateSource(@PathVariable long id, @RequestParam String name,
 			@RequestParam String type, @RequestParam Map<String, String> allRequestParams, Model model) {
 		// Update the source
 		Source source = sourceDao.findById(id);
@@ -125,7 +125,7 @@ public class SourceController {
 			deploymentService.undeploy(build.getPipeline());
 			deploymentService.deploy(build);
 		});
-		return new ResponseEntity<>("{}", HttpStatus.OK);
+		return getSources(model);
 	}
 
 	private void setSourceTypeParamsFromRequest(Source source, Map<String, String> requestParams) {

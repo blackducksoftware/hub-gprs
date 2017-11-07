@@ -1,4 +1,3 @@
-<html>
 <head>
 <title>Hub SCM Integration</title>
 <meta http-equiv="cache-control" content="max-age=0" />
@@ -44,31 +43,3 @@
 <script src="/js/scmint-ui.js"></script>
 
 </head>
-<body>
-	<div class="navbar">
-		<img class="navbar_logo"
-			src="/img/NewBlackDuckLogo_WhiteColor_Website.png" />
-		<ul class="navbar">
-			<li><a href="#" onclick="loadPageInMain('/sources')"
-				class="navbar_link">SCMs</a></li>
-			<li><a href="#" onclick="loadPageInMain('/builds')"
-				class="navbar_link">Repositories</a></li>
-			<li><a href="/logout" class="navbar_link">Log out</a></li>
-		</ul>
-	</div>
-	<div class="page_content" id="page_content">
-		<h1 align="center">Welcome to Pull Request Scanner!</h1>
-		<p align="center">
-			To start, configure one or more <a href="#"
-				onclick="loadPageInMain('/sources')">SCMs</a>. Then, configure one
-			or more <a href="#" onclick="loadPageInMain('/builds')">repositories.</a>
-		</p>
-		<p align="center">
-			<br />
-			<br />
-			<img src="/img/blueberries.jpg">
-		</p>
-
-	</div>
-</body>
-</html>

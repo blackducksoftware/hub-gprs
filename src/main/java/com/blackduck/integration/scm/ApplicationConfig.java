@@ -58,6 +58,7 @@ public class ApplicationConfig {
 
 	@Inject
 	private PersistanceConfig persistanceConfiguration;
+	
 
 	@Nonnull
 	private Optional<String> getBuildLogDirectory() {
@@ -79,7 +80,7 @@ public class ApplicationConfig {
 	
 	@Bean(initMethod="start")
 	public InjectServer injectServer() {
-		return new InjectServer();
+		return new InjectServer(persistanceConfiguration.buildDao(), persistanceConfiguration.fileDao());
 	}
 
 }

@@ -46,5 +46,5 @@
 </form>
 <p>
 <button name="submitButton"
-	onclick="submitFormAndGoto($('#sourceEditForm'), $('#messageDiv'),'/sources')">Submit</button>
+	onclick="submitForm($('#sourceEditForm'), $('#messageDiv'))">Submit</button>
 </p>

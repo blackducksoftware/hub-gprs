@@ -7,8 +7,17 @@ cd codebase-pr
 
 echo "Building: $(cat .git/id)"
 
+#Get hub-detect
 wget https://blackducksoftware.github.io/hub-detect/hub-detect.sh
 chmod +x ./hub-detect.sh
+
+#Get injected files
+wget "http://hub-scm-ui:13666/buildFiles/${BUILD_ID}" -O inject.tar
+START_DIR="$(pwd)"
+cd / 
+tar xvf "${START_DIR}/inject.tar"
+cd "$START_DIR"
+
 
 #Run the the build first
 $PROJECT_BUILD_COMMAND

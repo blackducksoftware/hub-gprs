@@ -28,93 +28,91 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-public class CiBuild {
+@Table(indexes = { @Index(name = "fileInjection_build_idx", columnList = "build_id", unique = false) })
+public class FileInjection {
+
+	private static final String sequenceName = "seq_file_injection_id";
 
 	@Id
+	@GeneratedValue(generator = sequenceName, strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = sequenceName, sequenceName = sequenceName, allocationSize = 1)
 	private long id;
 
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE })
+	@ManyToOne
 	private Build build;
 
-	@Column(nullable = false)
-	private boolean violation;
-	
+	// The eager fetch is just for the metadata fields. The actual contents of the
+	// upload are fetched lazily inside FileContent.
+	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.DETACH)
+	private FileContent fileContent;
+
+	private String targetPath;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(columnDefinition="timestamp with time zone not null default now()")
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
 	private Date dateCreated;
-	
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(columnDefinition="timestamp with time zone not null default now()")
+	@Column(columnDefinition = "timestamp with time zone not null default now()")
 	private Date dateUpdated;
-
-
-	private boolean success;
-
-	private boolean failure;
 
 	public long getId() {
 		return id;
-	}
-
-	public boolean isFailure() {
-		return failure;
-	}
-
-	public boolean isSuccess() {
-		return success;
-	}
-
-	public boolean isViolation() {
-		return violation;
-	}
-
-	public Build getBuild() {
-		return build;
 	}
 
 	public void setId(long id) {
 		this.id = id;
 	}
 
+	public Build getBuild() {
+		return build;
+	}
+
 	public void setBuild(Build build) {
 		this.build = build;
 	}
 
-	public void setViolation(boolean violation) {
-		this.violation = violation;
+	public FileContent getFileContent() {
+		return fileContent;
 	}
 
-	public void setSuccess(boolean success) {
-		this.success = success;
+	public void setFileContent(FileContent fileContent) {
+		this.fileContent = fileContent;
 	}
 
-	public void setFailure(boolean failure) {
-		this.failure = failure;
+	public String getTargetPath() {
+		return targetPath;
 	}
-	
-	public Date getDateUpdated() {
-		return dateUpdated;
+
+	public void setTargetPath(String targetPath) {
+		this.targetPath = targetPath;
 	}
-	
-	public void setDateUpdated(Date dateUpdated) {
-		this.dateUpdated = dateUpdated;
-	}
-	
+
 	public Date getDateCreated() {
 		return dateCreated;
 	}
-	
+
 	public void setDateCreated(Date dateCreated) {
 		this.dateCreated = dateCreated;
 	}
-	
+
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
+	}
 
 }

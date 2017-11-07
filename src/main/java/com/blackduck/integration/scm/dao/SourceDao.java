@@ -23,6 +23,7 @@
 package com.blackduck.integration.scm.dao;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import com.blackduck.integration.scm.entity.Source;
@@ -30,7 +31,7 @@ import com.blackduck.integration.scm.entity.Source;
 public class SourceDao {
 
 	private final ISourceRepository sourceRepository;
-	
+
 	public SourceDao(ISourceRepository sourceRepository) {
 		this.sourceRepository = sourceRepository;
 	}
@@ -53,6 +54,9 @@ public class SourceDao {
 	 * @return
 	 */
 	public Source create(Source source) {
+		Date dateCreated = new Date();
+		source.setDateCreated(dateCreated);
+		source.setDateUpdated(dateCreated);
 		return sourceRepository.save(source);
 	}
 
@@ -71,6 +75,7 @@ public class SourceDao {
 	// While this method presently has the same implementation as create(...), we
 	// don't want to expose that fact.
 	public void update(Source source) {
+		source.setDateUpdated(new Date());
 		sourceRepository.save(source);
 	}
 

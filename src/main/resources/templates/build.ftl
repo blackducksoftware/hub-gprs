@@ -13,7 +13,6 @@
 	<input type="hidden" name="${_csrf.parameterName}"
 		value="${_csrf.token}" />
 
-
 	<table class="formTable">
 		<tr>
 			<td class="formFieldName">Source:</td>
@@ -113,12 +112,72 @@
 				</tr>
 				
 				</table>
+			
 		  </div>
 		</div>
+		
+		<div id="fileInjection" style="width:600px"  class="panel panel-default" >
+		  	<div class="panel-heading">
+	  			<h3 class="panel-title">File Injection</h3>
+  			</div>
+  			<div class="panel-body">
+				<#-- Show currently added files -->
+				<#if build??>
+					<table class="formTable">
+					<#list build.fileInjections as file>
+						<tr>
+						<td>${file.fileContent.name}</td><td>&#8594;</td><td style="font-family: Courier New, monospace"> ${file.targetPath}</td><td><a href="#" onclick="deleteAndGoto(encodeURI('/builds/${build.id}/injections/${file.id}?${_csrf.parameterName}=${_csrf.token}'), $('#messageDiv'), '/builds/${build.id}')"><img src="/img/trash.svg" /></a></td>
+						</tr>
+					</#list>
+					</table>
+				<#else>
+					No file injections configured.
+				</#if>
+				<#-- Add new files -->
+				<br/>
+				<#if injectionCandidates?size != 0 >			
+					<p><br/><a href="#" id="addFile"><img src="/img/plus.svg" height="20px" width="20px" style="left:20px"></a></p>
+				<#else> 
+					No <#if build?? && build.fileInjections?size gt 0 >additional </#if>files available to inject.
+				</#if>
+					
+			</div>
+		</div>
+		
+				<script type="text/javascript">
+				$(document).ready(function(){
+					var counter = 1;
+					
+					$("#addFile").click(function(){
+					    //Let's make a copy to work with
+					    var originalDiv = $("#addFileDiv");
+					    var cloneDiv = originalDiv.clone(); 
+					
+					    //Renaming cloneDiv
+					    cloneDiv.attr('id','addFileDiv'+counter);
+					
+					    //Renaming inputs in  cloneDiv
+						$("[name='newFileContent']",cloneDiv).attr('id','newFileContent'+counter);
+					    $("[name='newFileContent']",cloneDiv).attr('name','newFileContent'+counter);
+					    $("[name='newFileTarget']",cloneDiv).attr('name','newFileTarget'+counter);
+					
+					    //Append the new file form to wherever the button is
+					    $("#addFile").before(cloneDiv);
+					    cloneDiv.css("visibility", 'visible');
+					    
+    						// Trigger a change event to populate the default target
+						$("#newFileContent"+counter).trigger('change');
+					
+					    //Increment counter
+					    counter++;      
+					});
+				});
+				</script>
+				
 
 </form>
 <button name="submitButton"
-	onclick="submitFormAndGoto($('#newDeploymentForm'), $('#messageDiv'),'/builds')">Submit</button>
+	onclick="submitForm($('#newDeploymentForm'), $('#messageDiv'))">Submit</button>
 <#-- If no image is specified (from an existing build), set the image and tag boxes to the value corresponding to the default build type-->	
 <script type="text/javascript">
 	if (!$('#build_image').val()){
@@ -127,3 +186,22 @@
 		});
 	}
 </script>
+
+<#-- Prototype of new file injection information form -->
+<div id="addFileDiv" style="visibility: hidden; border-style: solid; border-radius: 4px; border-color: #cccccc; border-width: 1px; margin: 5px">	
+	<table class="formTable">
+		<tr>
+			<td class="formFieldName">File:</td>
+			<td>	<select name="newFileContent"  onchange="$(this).parents('table').find(':text')[0].value='~/'+$(this).find('option:selected').text()">
+					<#list injectionCandidates as file>
+					<option value="${file.id}">${file.name}</option>
+					</#list>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="formFieldName">Target:</td>
+			<td> <input type="text" value="~" name="newFileTarget" class="param"/>
+		</tr>
+	</table>		
+</div>

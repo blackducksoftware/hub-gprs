@@ -91,7 +91,7 @@ public class DeploymentService {
 			fullParams.put("version_name", build.getVersionName());
 		}
 
-		String pipelineConfig = pipelineFactory.generatePipelineConfig(fullParams);
+		String pipelineConfig = pipelineFactory.generatePipelineConfig(build.getId(), fullParams);
 		concourseClient.addPipeline(build.getPipeline(), pipelineConfig);
 		concourseClient.unpausePipeline(build.getPipeline());
 		concourseClient.forceCheck(build.getPipeline());

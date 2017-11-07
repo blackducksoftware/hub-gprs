@@ -23,89 +23,73 @@
 package com.blackduck.integration.scm.entity;
 
 import java.util.Date;
+import java.util.List;
 
-import javax.persistence.CascadeType;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-public class CiBuild {
-
-	@Id
-	private long id;
-
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE })
-	private Build build;
-
-	@Column(nullable = false)
-	private boolean violation;
+public class FileContent {
+	private static final String sequenceName="seq_file_content_id";
 	
-
+	@Id
+	@GeneratedValue(generator = sequenceName, strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = sequenceName, sequenceName = sequenceName, allocationSize = 1)
+	private long id;
+	
+	@Column(unique=true)
+	private String name;
+	
+	@Column(columnDefinition="bytea")
+	@Basic(fetch=FetchType.LAZY)
+	private byte[] content;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(columnDefinition="timestamp with time zone not null default now()")
 	private Date dateCreated;
 	
-
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(columnDefinition="timestamp with time zone not null default now()")
 	private Date dateUpdated;
-
-
-	private boolean success;
-
-	private boolean failure;
-
+	
+	@OneToMany(targetEntity=FileInjection.class, mappedBy="fileContent", fetch=FetchType.LAZY)
+	private List<FileInjection> injections;
+	
 	public long getId() {
 		return id;
 	}
-
-	public boolean isFailure() {
-		return failure;
-	}
-
-	public boolean isSuccess() {
-		return success;
-	}
-
-	public boolean isViolation() {
-		return violation;
-	}
-
-	public Build getBuild() {
-		return build;
-	}
-
+	
 	public void setId(long id) {
 		this.id = id;
 	}
-
-	public void setBuild(Build build) {
-		this.build = build;
-	}
-
-	public void setViolation(boolean violation) {
-		this.violation = violation;
-	}
-
-	public void setSuccess(boolean success) {
-		this.success = success;
-	}
-
-	public void setFailure(boolean failure) {
-		this.failure = failure;
+	
+	/**
+	 * Returns the content of the file. Performance Note: file contents are lazily loaded. Invocation results in a database access.
+	 * @return
+	 */
+	public byte[] getContent() {
+		return content;
 	}
 	
-	public Date getDateUpdated() {
-		return dateUpdated;
+	public void setContent(byte[] content) {
+		this.content = content;
 	}
 	
-	public void setDateUpdated(Date dateUpdated) {
-		this.dateUpdated = dateUpdated;
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	public Date getDateCreated() {
@@ -116,5 +100,21 @@ public class CiBuild {
 		this.dateCreated = dateCreated;
 	}
 	
-
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+	
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
+	}
+	
+	public List<FileInjection> getInjections() {
+		return injections;
+	}
+	
+	public void setInjections(List<FileInjection> injections) {
+		this.injections = injections;
+	}
+	
+	
 }
