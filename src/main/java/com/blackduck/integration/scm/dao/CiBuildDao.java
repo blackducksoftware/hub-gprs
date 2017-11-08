@@ -23,6 +23,7 @@
 package com.blackduck.integration.scm.dao;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -35,7 +36,7 @@ import com.blackduck.integration.scm.entity.CiBuild;
 public class CiBuildDao {
 
 	private final ICiBuildRepository ciBuildRepository;
-	
+
 	public CiBuildDao(ICiBuildRepository ciBuildRepository) {
 		this.ciBuildRepository = ciBuildRepository;
 	}
@@ -44,29 +45,34 @@ public class CiBuildDao {
 		return Optional.ofNullable(ciBuildRepository.findOne(id));
 	}
 
-	
 	public Iterable<CiBuild> findByIds(Iterable<Long> ids) {
 		Iterable<CiBuild> found = ciBuildRepository.findAll(ids);
-		if (found ==null) found = Collections.emptyList();
+		if (found == null)
+			found = Collections.emptyList();
 		return found;
-		
+
 	}
-	
+
 	public void markViolation(long ciBuildId) {
 		CiBuild ciBuild = findOrScaffold(ciBuildId);
 		ciBuild.setViolation(true);
-		ciBuildRepository.save(ciBuild);
+		save(ciBuild);
 	}
 
 	public void markFailure(long ciBuildId) {
 		CiBuild ciBuild = findOrScaffold(ciBuildId);
 		ciBuild.setFailure(true);
-		ciBuildRepository.save(ciBuild);
+		save(ciBuild);
 	}
 
 	public void markSuccess(long ciBuildId) {
 		CiBuild ciBuild = findOrScaffold(ciBuildId);
 		ciBuild.setSuccess(true);
+		save(ciBuild);
+	}
+
+	private void save(CiBuild ciBuild) {
+		ciBuild.setDateUpdated(new Date());
 		ciBuildRepository.save(ciBuild);
 	}
 
@@ -81,8 +87,7 @@ public class CiBuildDao {
 	public void recordCompletion(long ciBuildId) {
 		CiBuild ciBuild = ciBuildRepository.findOne(ciBuildId);
 		if (ciBuild == null) {
-			ciBuild = new CiBuild();
-			ciBuild.setId(ciBuildId);
+			ciBuild = scaffold(ciBuildId);
 			ciBuildRepository.save(ciBuild);
 		}
 	}
@@ -97,10 +102,16 @@ public class CiBuildDao {
 	@Transactional
 	private CiBuild findOrScaffold(long ciBuildId) {
 		CiBuild ciBuild = ciBuildRepository.findOne(ciBuildId);
-		if (ciBuild == null) {
-			ciBuild = new CiBuild();
-			ciBuild.setId(ciBuildId);
-		}
+		if (ciBuild == null)
+			ciBuild = scaffold(ciBuildId);
+		return ciBuild;
+	}
+
+	private CiBuild scaffold(long ciBuildId) {
+		CiBuild ciBuild = new CiBuild();
+		ciBuild.setDateCreated(new Date());
+		ciBuild.setDateUpdated(new Date());
+		ciBuild.setId(ciBuildId);
 		return ciBuild;
 	}
 }
