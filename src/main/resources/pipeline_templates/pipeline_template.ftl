@@ -44,6 +44,7 @@
 			"plan": [
 				{
 					"get": "codebase-pr",
+					"version": "every",
 					"trigger": true
 				},
 				{
