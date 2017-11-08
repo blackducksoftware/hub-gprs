@@ -41,7 +41,7 @@ services:
     labels: 
       hub-scm:
       hub-scm-wipe:
-    image: concourse/concourse:3.5.0
+    image: concourse/concourse:3.6.0
     links: [hub-scm-db]
     #debugonlyports: ["8080:8080"]
     command: web --encryption-key ${ENCRYPTION_KEY}
@@ -60,7 +60,7 @@ services:
     labels: 
       hub-scm:
       hub-scm-wipe:
-    image: concourse/concourse:3.5.0
+    image: concourse/concourse:3.6.0
     privileged: true
     links: [concourse-web,hub-scm-ui]
     depends_on: [concourse-web]

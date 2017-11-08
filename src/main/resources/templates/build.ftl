@@ -192,7 +192,7 @@
 	<table class="formTable">
 		<tr>
 			<td class="formFieldName">File:</td>
-			<td>	<select name="newFileContent"  onchange="$(this).parents('table').find(':text')[0].value='~/'+$(this).find('option:selected').text()">
+			<td>	<select name="newFileContent"  onchange="$(this).parents('table').find(':text')[0].value='/'+$(this).find('option:selected').text()">
 					<#list injectionCandidates as file>
 					<option value="${file.id}">${file.name}</option>
 					</#list>
@@ -200,8 +200,8 @@
 			</td>
 		</tr>
 		<tr>
-			<td class="formFieldName">Target:</td>
-			<td> <input type="text" value="~" name="newFileTarget" class="param"/>
+			<td class="formFieldName">Target (absolute path):</td>
+			<td> <input type="text" value="/" name="newFileTarget" class="param"/>
 		</tr>
 	</table>		
 </div>
