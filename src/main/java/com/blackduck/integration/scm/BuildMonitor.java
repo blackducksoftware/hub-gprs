@@ -127,7 +127,6 @@ public class BuildMonitor {
 	private void processBuildCompletion(long buildId) {
 		ciBuildDao.recordCompletion(buildId);
 		monitoredBuilds.remove(buildId);
-		concourseClient.pruneWorkers();
 	}
 
 	public boolean isInViolation(long buildId) {
