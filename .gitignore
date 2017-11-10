@@ -30,3 +30,4 @@ nbdist/
 /setup/.env
 /setup/*.log
 /setup/.*docker-compose*yml
+/setup/download/

@@ -52,6 +52,9 @@ public class ApplicationConfig {
 
 	@Value("${blackduck.hub.password}")
 	private String hubPassword;
+	
+	@Value("${blackduck.hub-scm.static-location}")
+	private String localStaticDirectory;
 
 	@Inject
 	private ConcourseConfig concourseConfiguration;
@@ -80,7 +83,7 @@ public class ApplicationConfig {
 	
 	@Bean(initMethod="start")
 	public InjectServer injectServer() {
-		return new InjectServer(persistanceConfiguration.buildDao(), persistanceConfiguration.fileDao());
+		return new InjectServer(persistanceConfiguration.buildDao(), persistanceConfiguration.fileDao(), localStaticDirectory);
 	}
 
 }

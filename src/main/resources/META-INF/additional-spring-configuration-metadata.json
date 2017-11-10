@@ -30,8 +30,13 @@
     "description": "A description for 'concourse.password'"
   },
   {
-  	"name": "debug.buildLogDirectory",
-  	"type": "java.lang.String",
-  	"description": "To what directory should logs for failed builds be written? (Logs will not be written if omitted or empty)"
+    "name": "debug.buildLogDirectory",
+    "type": "java.lang.String",
+    "description": "To what directory should logs for failed builds be written? (Logs will not be written if omitted or empty)"
+  },
+  {
+    "name": "blackduck.hub-scm.static-location",
+    "type": "java.lang.String",
+    "description": "Local static files to be served to build nodes"
   }
 ]}

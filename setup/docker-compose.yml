@@ -25,6 +25,9 @@ services:
       - type: bind
         source: ./keys/ui
         target: /opt/keys
+      - type: bind
+        source: ./download
+        target: /static
       #log- type: bind
         #logsource: ${HUB_SCM_BUILD_LOG_DIR}
         #logtarget: ${HUB_SCM_BUILD_LOG_DIR}

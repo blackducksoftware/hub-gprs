@@ -22,3 +22,7 @@ spring:
     cache: false
 debug:
   buildLogDirectory:
+blackduck:
+  hub-scm:
+    static-location: /static
+    

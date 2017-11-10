@@ -93,6 +93,7 @@ public class DeploymentService {
 		}
 
 		String pipelineConfig = pipelineFactory.generatePipelineConfig(build.getId(), fullParams);
+		concourseClient.pruneWorkers();
 		concourseClient.addPipeline(build.getPipeline(), pipelineConfig);
 		concourseClient.unpausePipeline(build.getPipeline());
 		concourseClient.forceCheck(build.getPipeline());
@@ -167,6 +168,7 @@ public class DeploymentService {
 	}
 
 	public void triggerBuild(String pipeline) {
+		concourseClient.pruneWorkers();
 		concourseClient.forceBuild(pipeline);
 	}
 	

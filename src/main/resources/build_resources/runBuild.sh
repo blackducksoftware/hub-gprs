@@ -1,5 +1,16 @@
 #!/bin/sh
 
+#Do we have Java available? If not, download it from application
+
+if [ -z "$(which java)" ] || [ -z "${JAVA_HOME}"]; then
+	wget http://hub-scm-ui:13666/jdk.tar.gz
+	mkdir /jdk
+	tar xvzf jdk.tar.gz -C /jdk
+	export JAVA_HOME="/jdk/$(ls /jdk)"
+	export PATH="${JAVA_HOME}/bin:${PATH}"
+fi
+
+
 #Copy PR info into the result directory
 cp -r ./codebase-pr/.git ./codebase-result
 chmod -R a+r ./codebase-result/.git

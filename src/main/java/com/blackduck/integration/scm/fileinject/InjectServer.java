@@ -22,6 +22,8 @@
 
 package com.blackduck.integration.scm.fileinject;
 
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,9 +39,11 @@ import com.blackduck.integration.scm.fileinject.InjectFileArchiveResource.FileIn
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;
+import io.undertow.util.ChainedHandlerWrapper;
 
 /**
  * Provides a simple HTTP server exposed to Concourse for feeding files into the
@@ -62,14 +66,22 @@ public class InjectServer {
 
 	private final FileDao fileDao;
 
-	public InjectServer(BuildDao buildDao, FileDao fileDao) {
+	public InjectServer(BuildDao buildDao, FileDao fileDao, String localStaticFileLocation) {
 		this.buildDao = buildDao;
 		this.fileDao = fileDao;
 
-		// Create a handler for static resources (e.g. build script)
-		ResourceManager staticFileResourceManager = new ClassPathResourceManager(this.getClass().getClassLoader(),
-				"build_resources/");
-		ResourceHandler staticFileResourceHandler = new ResourceHandler(staticFileResourceManager);
+		// Resource manager for static files inside the application jar:
+		ResourceManager applicationStaticFileResourceManager = new ClassPathResourceManager(
+				this.getClass().getClassLoader(), "build_resources/");
+
+		// Resource manager for static files on local file system (e.g. JDK, hub-detect,
+		// etc)
+		ResourceManager fileSystemStaticFileResourceManager = new FileResourceManager(
+				Paths.get(localStaticFileLocation).toFile());
+
+		// Create a handler that chains them together, so that static files are searched in both places.
+		ResourceHandler staticFileResourceHandler = new ResourceHandler(applicationStaticFileResourceManager,
+				new ResourceHandler(fileSystemStaticFileResourceManager));
 
 		// Create a handler to handle injected resources:
 		ResourceHandler injectedFileResourceHandler = new ResourceHandler(
@@ -90,7 +102,8 @@ public class InjectServer {
 		List<FileInjection> fileInjections = buildDao.findById(buildId).getFileInjections();
 		List<FileInjectionMetadata> fileInjectionsMetadata = fileInjections.stream()
 				.map(fileInjection -> new FileInjectionMetadata(fileInjection.getTargetPath(),
-						fileInjection.getFileContent().getId(), fileInjection.getDateUpdated())).collect(Collectors.toList());
+						fileInjection.getFileContent().getId(), fileInjection.getDateUpdated()))
+				.collect(Collectors.toList());
 		return new InjectFileArchiveResource(buildId, fileInjectionsMetadata, fileDao);
 	}
 

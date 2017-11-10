@@ -1,4 +1,14 @@
 #!/bin/bash
+
+#Do we have a JRE downloaded?
+if [ ! -d ./download ]; then
+    mkdir download
+fi;
+
+if [ ! -e ./download/*jdk*.tar.gz ]; then
+    wget http://cdn.azul.com/zulu/bin/zulu8.25.0.1-jdk8.0.152-linux_x64.tar.gz -O download/jdk.tar.gz
+fi
+
 if [ -z "$JAVA_HOME" ]; then
     echo "JAVA_HOME is not set. Please set it to the location of your JDK."
     exit 127
