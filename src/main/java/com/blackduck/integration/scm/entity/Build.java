@@ -73,6 +73,9 @@ public class Build {
 
 	@Column(nullable = true)
 	private String versionName;
+	
+	@Column(nullable = true)
+	private String hubDetectArguments;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	private Source source;
@@ -90,6 +93,9 @@ public class Build {
 
 	@OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "build", orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<FileInjection> fileInjections;
+	
+	@Transient
+	private Properties properties = new Properties();
 
 	public long getId() {
 		return id;
@@ -179,9 +185,6 @@ public class Build {
 		this.versionName = versionName;
 	}
 
-	@Transient
-	private Properties properties = new Properties();
-
 	public Properties getProperties() {
 		return properties;
 	}
@@ -196,6 +199,14 @@ public class Build {
 
 	public void setFileInjections(List<FileInjection> fileInjections) {
 		this.fileInjections = fileInjections;
+	}
+	
+	public String getHubDetectArguments() {
+		return hubDetectArguments;
+	}
+	
+	public void setHubDetectArguments(String hubDetectArguments) {
+		this.hubDetectArguments = hubDetectArguments;
 	}
 
 	/**

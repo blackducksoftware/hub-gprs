@@ -60,7 +60,7 @@
 						},
 						"run": {
 						<#-- Compute arguments -->
-						<#assign args="">
+						<#assign args="${hub_detect_arguments}">
 						<#if project_name?hasContent>
 							<#assign args="${args} \\\"--detect.project.name='${project_name}'\\\"">
 						</#if>

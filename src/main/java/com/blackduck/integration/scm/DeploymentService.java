@@ -83,6 +83,7 @@ public class DeploymentService {
 		// Add build info
 		fullParams.put("build_image", build.getImage());
 		fullParams.put("build_image_tag", build.getImageTag());
+		fullParams.put("hub_detect_arguments", build.getHubDetectArguments());
 		fullParams.put("build_command", Strings.nullToEmpty(build.getBuildCommand()));
 		// Add project info
 		if (StringUtils.isNotBlank(build.getProjectName()	))

@@ -117,6 +117,7 @@ public class BuildController {
 			@RequestParam(required = true, name = "build_image_tag") String buildImageTag,
 			@RequestParam(required = false, name = "project_name") String projectName,
 			@RequestParam(required = false, name = "version_name") String versionName,
+			@RequestParam(required = false, name = "hub_detect_arguments") String hubDetectArguments,
 			@RequestParam Map<String, String> allParameters, Model model) {
 		Source source = sourceDao.findById(sourceId);
 		if (source == null) {
@@ -134,6 +135,7 @@ public class BuildController {
 		build.setVersionName(Strings.emptyToNull(versionName));
 		build.setImage(buildImage);
 		build.setImageTag(buildImageTag);
+		build.setHubDetectArguments(hubDetectArguments);
 
 		Build createdBuild = buildDao.create(build);
 		createNewFileInjections(createdBuild.getId(), allParameters);
@@ -232,6 +234,7 @@ public class BuildController {
 			@RequestParam(required = true, name = "build_image_tag") String buildImageTag,
 			@RequestParam(required = false, name = "project_name") String projectName,
 			@RequestParam(required = false, name = "version_name") String versionName,
+			@RequestParam(required = false, name = "hub_detect_arguments") String hubDetectArguments,
 			@RequestParam Map<String, String> allParameters, Model model) {
 
 		Build build = buildDao.findById(id);
@@ -249,7 +252,7 @@ public class BuildController {
 		build.setImageTag(buildImageTag);
 		build.setProjectName(Strings.emptyToNull(projectName));
 		build.setVersionName(Strings.emptyToNull(versionName));
-
+		build.setHubDetectArguments(hubDetectArguments);
 		// Update the build in DB to stop monitoring it
 		Build updatedBuild = buildDao.update(build);
 		createNewFileInjections(updatedBuild.getId(), allParameters);

@@ -92,6 +92,14 @@
 						<input type="text" name="build_command" id="build_command" <#if build??>value="${build.buildCommand}"</#if> class="param"/>
 					</td>
 				</tr>
+				<tr>
+					<td class="formFieldName">
+						Hub-Detect Arguments
+					</td>
+					<td>
+						<input type="text" name="hub_detect_arguments" id="hub_detect_arguments" <#if build??>value="${build.hubDetectArguments!''}"</#if> class="param"/>
+					</td>
+				</tr>
 				<!-- Project and version name (if not default -->
 				<tr><td colspan="2"><br/><br/>Leave the following blank to allow Hub-Detect to determine these values:</td></tr>
 				<tr>
