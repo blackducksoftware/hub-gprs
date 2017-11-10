@@ -110,3 +110,13 @@ function deleteHtml(uriToDelete) {
     });  
 }
 
+/* Post to the URL and replace document with response. */
+function postHtml(uriToPost) {
+    $.ajax({
+        url     : uriToPost,
+        type    : 'POST',
+        dataType: 'html',
+        success : replaceDocument,
+        error: replaceDocument
+    });  
+}

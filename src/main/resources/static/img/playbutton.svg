@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 50.389107 50.307026" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <filter id="f">
+   <feGaussianBlur stdDeviation="1.54827"/>
+  </filter>
+  <linearGradient id="e" x2="0" y1="-1.2398" y2="-76.4" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#286a27" offset="0"/>
+   <stop stop-color="#264826" offset="1"/>
+  </linearGradient>
+  <linearGradient id="a">
+   <stop stop-color="#fff" offset="0"/>
+   <stop stop-color="#fff" stop-opacity="0" offset="1"/>
+  </linearGradient>
+  <linearGradient id="c" x1="629.33" x2="632.48" y1="53.939" y2="25.597" gradientTransform="matrix(.85369 -.33367 .33367 .85369 -61.772 30.6)" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+  <linearGradient id="d" x2="0" y1="-39.056" y2="-3.3468" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+  <radialGradient id="b" cx="531.04" cy="-29.156" r="32.828" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#8fe68c" offset="0"/>
+   <stop stop-color="#29902b" offset="1"/>
+  </radialGradient>
+ </defs>
+ <g transform="matrix(.67755 0 0 .6764 -300.81 136.54)">
+  <path transform="translate(-49.888 -125.27)" d="m566.75-39.409a35.709 35.709 0 1 1 -0.00758 -0.73611" fill="url(#b)" stroke="url(#e)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.9543"/>
+  <g transform="translate(-54.859 58.823)" stroke-linecap="round" stroke-linejoin="round">
+   <path d="m523.42-241.28v38.325l32.937-19.016-32.937-19.309z" filter="url(#f)" opacity=".5" stroke="#000" stroke-width="3.076"/>
+   <path d="m521.66-243.05v38.325l32.937-19.016-32.937-19.309z" fill="#d6ffdc" stroke="#33543c" stroke-width="3.0762"/>
+  </g>
+  <path transform="matrix(1.0149 0 0 1.0396 -84.727 -157.14)" d="m581.24-21.201a23.688 17.854 0 1 1 -47.376 0 23.688 17.854 0 1 1 47.376 0z" fill="url(#d)"/>
+  <path d="m451.42-150.27c7.1012 15.798 25.442 23.423 41.753 17.048 16.301-6.3715 24.612-24.397 19.136-40.816-4.424 11.106-13.274 20.411-25.278 25.103-12.016 4.6965-24.822 3.8409-35.611-1.3348z" fill="url(#c)"/>
+ </g>
+</svg>

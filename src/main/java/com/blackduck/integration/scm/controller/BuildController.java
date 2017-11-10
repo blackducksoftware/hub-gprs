@@ -140,18 +140,31 @@ public class BuildController {
 		try {
 			deploymentService.deploy(build);
 		} catch (Throwable t) {
-			logger.error("Unable to deploy new build.",t);
-			//Delete the build
+			logger.error("Unable to deploy new build.", t);
+			// Delete the build
 			buildDao.deleteById(createdBuild.getId());
 			throw t;
 		}
-		
+
+		return getBuilds(model);
+	}
+
+	@PostMapping("/builds/{id}/trigger")
+	public String triggerBuild(@PathVariable long id, Model model) {
+		Build build = buildDao.findById(id);
+		try {
+			deploymentService.triggerBuild(build.getPipeline());
+			model.addAttribute("message", "Build/scan " + build.getName() + " triggered.");
+		} catch (Throwable t) {
+			model.addAttribute("message", "Unable to trigger build/scan of " + build.getName() + ": " + t.getMessage());
+		}
 		return getBuilds(model);
 	}
 
 	/**
-	 * Extracts all file injections submitted as part of a build edit and creates the injections.
-	 * Note: build must exist prior to invocation.
+	 * Extracts all file injections submitted as part of a build edit and creates
+	 * the injections. Note: build must exist prior to invocation.
+	 * 
 	 * @param allParameters
 	 * @return
 	 */
@@ -159,10 +172,9 @@ public class BuildController {
 		final String contentAttributePrefix = "newFileContent";
 		Set<String> newInjectionIndices = allParameters.keySet().stream()
 				.filter(key -> StringUtils.startsWith(key, contentAttributePrefix))
-				//Remove the prefix to get the index
-				.map(str->StringUtils.substringAfter(str, contentAttributePrefix))
-				.collect(Collectors.toSet());
-		
+				// Remove the prefix to get the index
+				.map(str -> StringUtils.substringAfter(str, contentAttributePrefix)).collect(Collectors.toSet());
+
 		for (String index : newInjectionIndices) {
 			String target = allParameters.get("newFileTarget" + index);
 			long fileContentId = Long.parseLong(allParameters.get(contentAttributePrefix + index));

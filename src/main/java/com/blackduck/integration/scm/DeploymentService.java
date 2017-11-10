@@ -165,6 +165,10 @@ public class DeploymentService {
 		}
 	}
 
+	public void triggerBuild(String pipeline) {
+		concourseClient.forceBuild(pipeline);
+	}
+	
 	public void undeploy(String pipelineName) {
 		concourseClient.destroyPipeline(pipelineName);
 	}

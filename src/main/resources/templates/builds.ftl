@@ -14,7 +14,9 @@
 	<table class="listTable">
 		<#list builds as build>
 			<#assign buildStatus=statuses[build.id?string]>
-			<tr><td><a href="#" onclick="loadPageInMain('/builds/${build.id}')">${build.name}</a> &nbsp; <span id="status_${build.id?string}"></span> <a href="#" ><img src="/img/trash.svg" onclick="deleteHtml(encodeURI('/builds/${build.id}?${_csrf.parameterName}=${_csrf.token}'))" ></a></td></tr>
+			<tr><td><a href="#" onclick="loadPageInMain('/builds/${build.id}')">${build.name}</a> &nbsp; <span id="status_${build.id?string}"></span> <a href="#" ><img src="/img/trash.svg" onclick="deleteHtml(encodeURI('/builds/${build.id}?${_csrf.parameterName}=${_csrf.token}'))" ></a>
+			<a href="#" onclick="postHtml(encodeURI('/builds/${build.id}/trigger?${_csrf.parameterName}=${_csrf.token}'))"><img src="/img/playbutton.svg" height="20" width="20" alt="Build latest PR" style="position:relative; left:-10px"/></a>
+			</td></tr>
 		</#list>
 	</table>
 	</p>

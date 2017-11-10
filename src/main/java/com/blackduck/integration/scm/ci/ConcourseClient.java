@@ -79,6 +79,8 @@ public class ConcourseClient {
 	private static final Logger logger = LoggerFactory.getLogger(ConcourseClient.class);
 
 	private static final String codeResourceName = "codebase-pr";
+	
+	private static final String buildTaskName = "hub-detect";
 
 	private final String concourseUrl;
 	private final String concourseUsername;
@@ -210,6 +212,25 @@ public class ConcourseClient {
 		}
 	}
 
+	public void forceBuild(String pipelineName) {
+		String escapedPipelineName = escapePipelineName(pipelineName);
+		String buildUri = baseUrl + "/pipelines/" + escapedPipelineName + "/jobs/" + buildTaskName + "/builds";
+		String requestBody = "{}";
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
+		try {
+			ResponseEntity<String> response = restTemplate.postForEntity(buildUri, requestBody, String.class);
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				logger.error("Unable to check for code changes for pipeline " + pipelineName);
+			}
+		} catch (HttpServerErrorException e) {
+			// Sometimes a POST to the check URI fails with a 500 and no explanation or
+			// meaningful log output because Concourse.
+			logger.warn("Unable to trigger build for pipeline: " + pipelineName + ": " + e.getMessage() + "\n"
+					+ e.getResponseBodyAsString());
+		}
+	}
+	
 	public void addPipeline(String pipelineName, String pipelineConfig) {
 		String escapedPipelineName = escapePipelineName(pipelineName);
 		String putUrl = baseUrl + "/pipelines/" + escapedPipelineName + "/config";
