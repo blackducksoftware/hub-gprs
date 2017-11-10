@@ -154,7 +154,7 @@ public class BuildController {
 		Build build = buildDao.findById(id);
 		try {
 			deploymentService.triggerBuild(build.getPipeline());
-			model.addAttribute("message", "Build/scan " + build.getName() + " triggered.");
+			model.addAttribute("message", "Build/scan of " + build.getName() + " triggered.");
 		} catch (Throwable t) {
 			model.addAttribute("message", "Unable to trigger build/scan of " + build.getName() + ": " + t.getMessage());
 		}
