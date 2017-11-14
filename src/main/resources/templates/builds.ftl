@@ -14,8 +14,11 @@
 	<table class="listTable">
 		<#list builds as build>
 			<#assign buildStatus=statuses[build.id?string]>
-			<tr><td><a href="#" onclick="loadPageInMain('/builds/${build.id}')">${build.name}</a> &nbsp; <span id="status_${build.id?string}"></span> <a href="#" ><img src="/img/trash.svg" onclick="deleteHtml(encodeURI('/builds/${build.id}?${_csrf.parameterName}=${_csrf.token}'))" ></a>
-			<a href="#"  style="position:relative; left:-10px" onclick="postHtml(encodeURI('/builds/${build.id}/trigger?${_csrf.parameterName}=${_csrf.token}'))"><img src="/img/playbutton.svg" height="20" width="20" alt="Build latest PR"/></a>
+			<tr><td><a href="#" onclick="loadPageInMain('/builds/${build.id}')">${build.name}</a></td><td><span id="status_${build.id?string}"></span></td>
+			<td>
+			<#--Delete Icon--><a href="#" class="listButton"><img src="/img/trash.svg" onclick="deleteHtml(encodeURI('/builds/${build.id}?${_csrf.parameterName}=${_csrf.token}'))" class="listButton"></a>
+			<#--Clone Icon--><a href="#" class="listButton" ><img src="/img/clone.svg" onclick="loadInModal('/builds/${build.id}/clone', 'Clone Repository', null)" class="listButton"></a>
+			<#--Trigger icon--><a href="#" class="listButton" onclick="postHtml(encodeURI('/builds/${build.id}/trigger?${_csrf.parameterName}=${_csrf.token}'))"><img src="/img/playbutton.svg" class="listButton" alt="Build latest PR"/></a>
 			</td></tr>
 		</#list>
 	</table>
@@ -40,5 +43,23 @@
 		});
 	</script>
 </div>
+
+<!-- Modal -->
+	<div id="modalView" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+			<!-- Modal content-->
+			<div class="modal-content" style="width:500px">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title" id="modalViewTitle">Clone Repository</h4>
+				</div>
+				<div class="modal-body" id="modalViewBody">
+				</div>
+				<div class="modal-footer" id="modalFooter">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary" onclick="$('#cloneForm').submit()">Submit</button>			
+				</div>
+			</div>
+		</div>
 </body>
 </html>

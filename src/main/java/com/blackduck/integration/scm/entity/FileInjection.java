@@ -24,7 +24,6 @@ package com.blackduck.integration.scm.entity;
 
 import java.util.Date;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -54,7 +53,7 @@ public class FileInjection {
 
 	// The eager fetch is just for the metadata fields. The actual contents of the
 	// upload are fetched lazily inside FileContent.
-	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.DETACH)
+	@ManyToOne(fetch = FetchType.EAGER)
 	private FileContent fileContent;
 
 	private String targetPath;

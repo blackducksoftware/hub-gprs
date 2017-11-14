@@ -22,6 +22,7 @@
 
 package com.blackduck.integration.scm.dao;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,9 +45,13 @@ public class BuildDao {
 
 	private final IFileInjectionRepository fileInjectionRepository;
 
-	public BuildDao(IBuildRepository buildRepository, IFileInjectionRepository fileInjectionRepository) {
+	private final EntityManager entityManager;
+
+	public BuildDao(IBuildRepository buildRepository, IFileInjectionRepository fileInjectionRepository,
+			EntityManager entityManager) {
 		this.buildRepository = buildRepository;
 		this.fileInjectionRepository = fileInjectionRepository;
+		this.entityManager = entityManager;
 	}
 
 	public Stream<Build> getAll() {
@@ -110,6 +116,46 @@ public class BuildDao {
 	public Build update(Build build) {
 		build.setDateUpdated(new Date());
 		return buildRepository.save(build);
+	}
+
+	/**
+	 * Creates an unpersisted clone of a build with the specified ID
+	 * 
+	 * @param build
+	 * @return
+	 */
+	public Build clone(long buildId) {
+		Build build = findById(buildId);
+		if (build == null) {
+			throw new IllegalArgumentException("Build with id " + buildId + " not found.");
+		}
+		Date now = new Date();
+		
+		//Create new file injections for the build
+		List<FileInjection> injections = build.getFileInjections();
+		List<FileInjection> targetInjections = new ArrayList<>(injections.size());
+
+		if (injections != null) {
+			for (FileInjection injection : injections) {
+				FileInjection newInjection = new FileInjection();
+				newInjection.setFileContent(injection.getFileContent());
+				newInjection.setDateCreated(now);
+				newInjection.setDateUpdated(now);
+				newInjection.setTargetPath(injection.getTargetPath());
+				newInjection.setId(0L);
+				newInjection.setBuild(null);
+				targetInjections.add(newInjection);
+			}
+		}
+		
+		
+		entityManager.detach(build);
+		build.setDateCreated(now);
+		build.setDateUpdated(now);
+		build.setId(null);
+		targetInjections.forEach(inj ->inj.setBuild(build));
+		build.setFileInjections(targetInjections);
+		return build;
 	}
 
 	/**

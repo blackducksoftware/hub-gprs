@@ -23,6 +23,8 @@
 package com.blackduck.integration.scm.dao;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +46,9 @@ public class PersistanceConfig {
 	
 	@Inject
 	private IFileInjectionRepository fileInjectionRepository;
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Bean
 	public SourceDao sourceDao() {
@@ -57,7 +62,7 @@ public class PersistanceConfig {
 
 	@Bean
 	public BuildDao buildDao() {
-		return new BuildDao(buildRepository, fileInjectionRepository);
+		return new BuildDao(buildRepository, fileInjectionRepository, entityManager);
 	}
 
 	@Bean

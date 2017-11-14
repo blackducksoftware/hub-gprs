@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="h">
+   <stop stop-color="#d4d3d3" offset="0"/>
+   <stop stop-color="#fff" offset="1"/>
+  </linearGradient>
+  <linearGradient id="a">
+   <stop stop-color="#7d7d7d" offset="0"/>
+   <stop stop-color="#d3d4d4" offset="1"/>
+  </linearGradient>
+  <linearGradient id="g" x1="24.813" x2="54.846" y1="13.622" y2="68.718" gradientUnits="userSpaceOnUse" xlink:href="#h"/>
+  <linearGradient id="f" x1="56.684" x2="66.045" y1="73.844" y2="59.714" gradientUnits="userSpaceOnUse" xlink:href="#h"/>
+  <linearGradient id="e" x1="49.264" x2="112.51" y1="54.207" y2="110.79" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+  <linearGradient id="d" x1="-7.0857" x2="116.18" y1="-9.2684" y2="139.38" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+  <linearGradient id="c" x1="-17.6" x2="142.39" y1="-20.138" y2="143.87" gradientTransform="scale(.9248 1.0813)" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+  <radialGradient id="b" cx="13.3" cy="10.239" r="124.18" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#fff" stop-opacity=".72917" offset="0"/>
+   <stop stop-color="#fff" stop-opacity="0" offset="1"/>
+  </radialGradient>
+ </defs>
+ <g transform="translate(0,-32)">
+  <g transform="matrix(.42503 0 0 .42503 14.347 41.28)">
+   <path d="m39.849 9.4347 33.38-0.3305v50.731l-18.508 19.499h-41.643l-0.16525-9.5844 26.935-60.316z" fill="#cbcbcb" fill-rule="evenodd"/>
+   <path d="m10.741 6.1341 59.324 0.16525-0.3305 50.401-17.682 18.673-41.477 0.49574 0.16525-69.735z" fill="#fff" fill-rule="evenodd"/>
+   <path d="m68.096 7.5h-56.008l-0.08329 66.465h39.845l16.246-16.935v-49.53z" fill="url(#g)"/>
+   <path transform="matrix(1.0972 0 0 .99487 -4.7051 .38795)" d="m52.081 75.154 15.973-18.726h-15.973v18.726z" fill="#fff"/>
+   <path d="m53.068 74.814 15.424-16.395h-15.424v16.395z" fill="url(#f)"/>
+   <path d="m68.24 13.585v-6.2503h-56.185l-0.05043 36.2c21.582 7.4188 52.821-11.304 56.235-29.95z" fill="url(#b)"/>
+   <path d="m69.584 6.5013v50.545l-17.301 18.392h-41.518v-68.936l58.819-8.1e-4zm0.38204-0.81226h-59.966v70.561h42.598l17.749-18.868v-51.693h-0.38205z" fill="url(#d)" stroke="url(#c)" stroke-width=".69573"/>
+   <path d="m52.09205,56.80735c-.21089,0-.38205.18195-.38205.40613v18.62997c0,.16489.09322.31272.23611.37607s.30716.02843.41643-.08854l17.52533-18.62997c.10927-.11615.14213-.29078.08329-.44268s-.19867-.25099-.35378-.25099h-17.52533zm16.60307.81226-16.22102,17.24344v-17.24344h16.22102z" fill="url(#e)"/>
+  </g>
+  <g transform="matrix(.42503 0 0 .42503 -.61483 30.685)">
+   <path d="m39.849 9.4347 33.38-0.3305v50.731l-18.508 19.499h-41.643l-0.16525-9.5844 26.935-60.316z" fill-opacity=".2381" fill-rule="evenodd"/>
+   <path d="m10.741 6.1341 59.324 0.16525-0.3305 50.401-17.682 18.673-41.477 0.49574 0.16525-69.735z" fill="#fff" fill-rule="evenodd"/>
+   <path d="m68.096 7.5h-56.008l-0.08329 66.465h39.845l16.246-16.935v-49.53z" fill="url(#g)"/>
+   <path transform="matrix(1.0972 0 0 .99487 -4.7051 .38795)" d="m52.081 75.154 15.973-18.726h-15.973v18.726z" fill="#fff"/>
+   <path d="m53.068 74.814 15.424-16.395h-15.424v16.395z" fill="url(#f)"/>
+   <path d="m68.24 13.585v-6.2503h-56.185l-0.05043 36.2c21.582 7.4188 52.821-11.304 56.235-29.95z" fill="url(#b)"/>
+   <path d="m69.584 6.5013v50.545l-17.301 18.392h-41.518v-68.936l58.819-8.1e-4zm0.38204-0.81226h-59.966v70.561h42.598l17.749-18.868v-51.693h-0.38205z" fill="url(#d)" stroke="url(#c)" stroke-width=".69573"/>
+   <path d="m52.09205,56.80735c-.21089,0-.38205.18195-.38205.40613v18.62997c0,.16489.09322.31272.23611.37607s.30716.02843.41643-.08854l17.52533-18.62997c.10927-.11615.14213-.29078.08329-.44268s-.19867-.25099-.35378-.25099h-17.52533zm16.60307.81226-16.22102,17.24344v-17.24344h16.22102z" fill="url(#e)"/>
+  </g>
+  <path d="m8.2477 45.674c-8.852 9.5918-7.7521 24.944 9.1419 24.483l0.15374 7.8431 12.001-11.999-12.175-12.108 0.01002 7.8692c-14.107 0.349-12.713-9.578-9.1312-16.087z" display="block" fill="#8dba64"/>
+ </g>
+</svg>

@@ -297,6 +297,35 @@ public class BuildController {
 		buildDao.deleteById(id);
 		return getBuilds(model);
 	}
+	
+	/*
+	 * The "Clone" functionality allows many builds in one source to be configured quickly using an existing build as a template. The Get simply returns a form pre-populated with the template build and blanks for the defining attribute. 
+	 * The POST performs the cloning.
+	 */
+	
+	@GetMapping("/builds/{id}/clone")
+	public String newCloneForm(@PathVariable long id, Model model) {
+		Build build = buildDao.findById(id);
+		model.addAttribute("build", build);
+		return "clone";
+	}
+	
+	@PostMapping("/builds/{id}/clone")
+	public String createClones(@RequestParam String[] cloneValues, @PathVariable(name="id") long sourceBuildId, Model model) {
+		Build sourceBuild = buildDao.findById(sourceBuildId);
+		String definingAttribute = sourceBuild.getSource().getType().getBuildIdentifierProperty();
+		for (String cloneValue : cloneValues) {
+			Build newBuild = buildDao.clone(sourceBuildId);
+			newBuild.getProperties().setProperty(definingAttribute, cloneValue);
+			newBuild.setPipeline(generatePipelineName(newBuild.getName()));
+			Build createdBuild = buildDao.create(newBuild);
+			//Once the build is persisted, we can deploy it.
+			deploymentService.deploy(createdBuild);
+		}
+		model.addAttribute("message", sourceBuild.getName()+" cloned successfully.");
+		return getBuilds(model);
+	}
+	
 
 	@ExceptionHandler(Exception.class)
 	public ModelAndView handleException(HttpServletRequest req, Exception ex) {

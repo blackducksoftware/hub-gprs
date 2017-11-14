@@ -54,7 +54,7 @@ public class Build {
 	@Id
 	@GeneratedValue(generator = "seq_build_id", strategy = GenerationType.SEQUENCE)
 	@SequenceGenerator(name = "seq_build_id", sequenceName = "seq_build_id", allocationSize = 1)
-	private long id;
+	private Long id;
 
 	@Enumerated
 	@Column(nullable = false)
@@ -91,17 +91,17 @@ public class Build {
 	@Column(nullable = false, unique = true)
 	private String pipeline;
 
-	@OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST }, mappedBy = "build", orphanRemoval = true, fetch=FetchType.EAGER)
+	@OneToMany(cascade = { CascadeType.REMOVE, CascadeType.PERSIST, CascadeType.DETACH }, mappedBy = "build", orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<FileInjection> fileInjections;
 	
 	@Transient
 	private Properties properties = new Properties();
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

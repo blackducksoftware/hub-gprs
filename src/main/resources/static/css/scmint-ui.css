@@ -101,6 +101,15 @@ table.listTable tr td a:hover {
 	background-color: #f3f3fa;
 }
 
+img.listButton{
+	width: 20px;
+	height: 20px;
+}
+
+a.listButton {
+	margin-left: 0px;
+	margin-right: 0px;
+}
 
 /* NAVBAR */
 div.navbar {

@@ -23,7 +23,6 @@
 package com.blackduck.integration.scm.fileinject;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,6 @@ import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;
-import io.undertow.util.ChainedHandlerWrapper;
 
 /**
  * Provides a simple HTTP server exposed to Concourse for feeding files into the
