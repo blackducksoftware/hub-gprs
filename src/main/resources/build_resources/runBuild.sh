@@ -2,7 +2,7 @@
 
 #Do we have Java available? If not, download it from application
 
-if [ -z "$(which java)" ] || [ -z "${JAVA_HOME}"]; then
+if [ -z "$(which java)" ] || [ -z "${JAVA_HOME}" ]; then
 	wget http://hub-scm-ui:13666/jdk.tar.gz
 	mkdir /jdk
 	tar xvzf jdk.tar.gz -C /jdk
@@ -43,9 +43,21 @@ status=$?
 echo "Hub-detect completed".
 
 #Extract details link
-detailUrl=$(grep 'To see your results, follow the URL:' hub-detect.log | sed -e 's#.*follow\ the\ URL\:\ \(\)#\1#') 
+detailUrl=$(grep 'To see your results, follow the URL:' hub-detect.log | sed -e 's#.*follow\ the\ URL\:\ \(\)#\1#')
+violationResult="$(grep 'Policy Status: IN_VIOLATION' hub-detect.log)"
+
+resultStatus="No violations found.";
+if [ ! -z "${violationResult}" ]; then
+	resultStatus="Policy violation(s) found." 
+elif [ "$status" -ne "0" ]; then
+	resultStatus="Scan failed, violation status unknown."
+fi
+
+echo "$resultStatus"
+echo "$resultStatus" > ../codebase-result/.status_description
 
 #Populate the details link in the result
 echo "${detailUrl}" > ../codebase-result/.build_url 
+
 
 exit $status

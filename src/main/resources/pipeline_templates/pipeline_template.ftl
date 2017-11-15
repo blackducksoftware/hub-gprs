@@ -32,7 +32,7 @@
 			"type": "docker-image",
 			"source": {
 				"repository": "yevster/github-pr",
-				"tag" : "latest"
+				"tag" : "v31a"
 			},
 			"privileged": false,
 			"tags": null
@@ -98,8 +98,7 @@
 						"params": {
 							"path": "codebase-result",
 							"status": "failure",
-							"title": "Black Duck Hub",
-							"description": "Policy violation(s) found."
+							"title": "Black Duck Hub"
 						}
 					},
 					"on_success": {
@@ -107,8 +106,7 @@
 						"params": {
 							"path": "codebase-result",
 							"status": "success",
-							"title": "Black Duck Hub",
-							"description": "No policy violations found."
+							"title": "Black Duck Hub"
 						}
 					}
 				}
