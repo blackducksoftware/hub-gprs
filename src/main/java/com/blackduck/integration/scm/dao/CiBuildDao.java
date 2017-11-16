@@ -23,12 +23,10 @@
 package com.blackduck.integration.scm.dao;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
-
-import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.entity.CiBuild;
 
@@ -40,7 +38,7 @@ public class CiBuildDao {
 	private final ICiBuildRepository ciBuildRepository;
 	
 	public CiBuildDao(ICiBuildRepository ciBuildRepository) {
-		this.ciBuildRepository = ciBuildRepository;
+		this.ciBuildRepository = Objects.requireNonNull(ciBuildRepository, "ci build repository must not be null");
 	}
 
 	public Optional<CiBuild> findById(long id) {

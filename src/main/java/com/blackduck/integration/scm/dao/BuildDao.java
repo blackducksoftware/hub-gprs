@@ -23,12 +23,9 @@
 package com.blackduck.integration.scm.dao;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.inject.Inject;
-
-import org.springframework.stereotype.Component;
 
 import com.blackduck.integration.scm.entity.Build;
 
@@ -38,7 +35,7 @@ public class BuildDao {
 	private final IBuildRepository buildRepository;
 	
 	public BuildDao(IBuildRepository buildRepository) {
-		this.buildRepository = buildRepository;
+		this.buildRepository = Objects.requireNonNull(buildRepository, "build repository must not be null");
 	}
 
 	public Stream<Build> getAll() {

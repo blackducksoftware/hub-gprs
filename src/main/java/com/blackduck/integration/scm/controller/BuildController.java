@@ -26,10 +26,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
@@ -70,16 +70,19 @@ public class BuildController {
 
 	private static final Logger logger = LoggerFactory.getLogger(BuildController.class);
 
-	@Inject
-	private DeploymentService deploymentService;
+	private final DeploymentService deploymentService;
 
-	@Inject
-	private BuildDao buildDao;
+	private final BuildDao buildDao;
 
-	@Inject
-	private SourceDao sourceDao;
+	private final SourceDao sourceDao;
 
-	@GetMapping("/newBuild")
+    public BuildController(DeploymentService deploymentService, BuildDao buildDao, SourceDao sourceDao) {
+        this.deploymentService = Objects.requireNonNull(deploymentService, "deployment service must not be null");
+        this.buildDao = Objects.requireNonNull(buildDao, "build dao must not be null");
+        this.sourceDao = Objects.requireNonNull(sourceDao, "source dao must not be null");
+    }
+
+    @GetMapping("/newBuild")
 	public String editBuildView(Model model) {
 		model.addAttribute("buildTypes", BuildType.values());
 		model.addAttribute("sources", sourceDao.list());

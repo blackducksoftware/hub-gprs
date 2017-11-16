@@ -24,8 +24,8 @@ package com.blackduck.integration.scm.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,18 +44,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.blackduck.integration.scm.dao.BuildDao;
 import com.blackduck.integration.scm.dao.SourceDao;
 import com.blackduck.integration.scm.entity.ParamDefinition;
+import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.blackduck.integration.scm.entity.Source;
 import com.blackduck.integration.scm.entity.SourceType;
-import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 
 @Controller
 public class SourceController {
 
-	@Inject
-	private SourceDao sourceDao;
+	private final SourceDao sourceDao;
 	
-	@Inject
-	private BuildDao buildDao;
+	private final BuildDao buildDao;
+
+	public SourceController(SourceDao sourceDao, BuildDao buildDao) {
+		this.sourceDao = Objects.requireNonNull(sourceDao, "source dao cannot be null");
+		this.buildDao = Objects.requireNonNull(buildDao, "build dao connot be null");
+	}
 
 	@GetMapping("/newSource")
 	public String newSource(Model model) {
