@@ -16,9 +16,9 @@
 			<#assign buildStatus=statuses[build.id?string]>
 			<tr><td><a href="#" onclick="loadPageInMain('/builds/${build.id}')">${build.name}</a></td><td><span id="status_${build.id?string}"></span></td>
 			<td>
-			<#--Delete Icon--><a href="#" class="listButton"><img src="/img/trash.svg" onclick="deleteHtml(encodeURI('/builds/${build.id}?${_csrf.parameterName}=${_csrf.token}'))" class="listButton"></a>
-			<#--Clone Icon--><a href="#" class="listButton" ><img src="/img/clone.svg" onclick="loadInModal('/builds/${build.id}/clone', 'Clone Repository', null)" class="listButton"></a>
-			<#--Trigger icon--><a href="#" class="listButton" onclick="postHtml(encodeURI('/builds/${build.id}/trigger?${_csrf.parameterName}=${_csrf.token}'))"><img src="/img/playbutton.svg" class="listButton" alt="Build latest PR"/></a>
+			<#--Delete Icon--><a href="#" class="listButton"><img src="/img/trash.svg" title="Stop monitoring repository" onclick="deleteHtml(encodeURI('/builds/${build.id}?${_csrf.parameterName}=${_csrf.token}'))" class="listButton"></a>
+			<#--Clone Icon--><a href="#" class="listButton" ><img src="/img/clone.svg" title="Clone repository settings" onclick="loadInModal('/builds/${build.id}/clone', 'Clone Repository', null)" class="listButton"></a>
+			<#--Trigger icon--><a href="#" class="listButton" onclick="postHtml(encodeURI('/builds/${build.id}/trigger?${_csrf.parameterName}=${_csrf.token}'))"><img src="/img/playbutton.svg" title="Trigger scan of latest PR" class="listButton" alt="Build latest PR"/></a>
 			</td></tr>
 		</#list>
 	</table>
