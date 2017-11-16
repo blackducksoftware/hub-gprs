@@ -1,5 +1,12 @@
 #!/bin/sh
 
+#Write a default details link and failure message in case we have a failure before we get to write the real results
+echo "   	" > codebase-result/.build_url 
+resultStatus="Build/scan failed. Policy violation status unknown."
+echo "$resultStatus" > codebase-result/.status_description
+
+
+
 #Do we have Java available? If not, download it from application
 
 if [ -z "$(which java)" ] || [ -z "${JAVA_HOME}" ]; then
@@ -46,11 +53,10 @@ echo "Hub-detect completed".
 detailUrl=$(grep 'To see your results, follow the URL:' hub-detect.log | sed -e 's#.*follow\ the\ URL\:\ \(\)#\1#')
 violationResult="$(grep 'Policy Status: IN_VIOLATION' hub-detect.log)"
 
-resultStatus="No violations found.";
 if [ ! -z "${violationResult}" ]; then
 	resultStatus="Policy violation(s) found." 
-elif [ "$status" -ne "0" ]; then
-	resultStatus="Scan failed, violation status unknown."
+elif [ "$status" -eq "0" ]; then
+	resultStatus="No violations found."
 fi
 
 echo "$resultStatus"
