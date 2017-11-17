@@ -137,6 +137,16 @@ public class BuildController {
 		build.setImageTag(buildImageTag);
 		build.setHubDetectArguments(hubDetectArguments);
 
+		// Ensure no other builds with this name on source. Not super-efficient, but the
+		// attribute that defines the "name" can vary based on source, and we're not
+		// expecting millions of repos on one SCM.
+		Optional<Build> priorBuild = buildDao.findAllBySourceId(source.getId()).stream().filter(existingBuild -> build.getName().equals(existingBuild.getName())).findAny();
+		if (priorBuild.isPresent()) {
+			model.addAttribute("message", "A build/scan of "+build.getName()+" already exists on "+source.getName()+".");
+			return getBuilds(model);
+		}
+				
+
 		Build createdBuild = buildDao.create(build);
 		createNewFileInjections(createdBuild.getId(), allParameters);
 		try {
@@ -297,21 +307,24 @@ public class BuildController {
 		buildDao.deleteById(id);
 		return getBuilds(model);
 	}
-	
+
 	/*
-	 * The "Clone" functionality allows many builds in one source to be configured quickly using an existing build as a template. The Get simply returns a form pre-populated with the template build and blanks for the defining attribute. 
+	 * The "Clone" functionality allows many builds in one source to be configured
+	 * quickly using an existing build as a template. The Get simply returns a form
+	 * pre-populated with the template build and blanks for the defining attribute.
 	 * The POST performs the cloning.
 	 */
-	
+
 	@GetMapping("/builds/{id}/clone")
 	public String newCloneForm(@PathVariable long id, Model model) {
 		Build build = buildDao.findById(id);
 		model.addAttribute("build", build);
 		return "clone";
 	}
-	
+
 	@PostMapping("/builds/{id}/clone")
-	public String createClones(@RequestParam String[] cloneValues, @PathVariable(name="id") long sourceBuildId, Model model) {
+	public String createClones(@RequestParam String[] cloneValues, @PathVariable(name = "id") long sourceBuildId,
+			Model model) {
 		Build sourceBuild = buildDao.findById(sourceBuildId);
 		String definingAttribute = sourceBuild.getSource().getType().getBuildIdentifierProperty();
 		for (String cloneValue : cloneValues) {
@@ -319,13 +332,12 @@ public class BuildController {
 			newBuild.getProperties().setProperty(definingAttribute, cloneValue);
 			newBuild.setPipeline(generatePipelineName(newBuild.getName()));
 			Build createdBuild = buildDao.create(newBuild);
-			//Once the build is persisted, we can deploy it.
+			// Once the build is persisted, we can deploy it.
 			deploymentService.deploy(createdBuild);
 		}
-		model.addAttribute("message", sourceBuild.getName()+" cloned successfully.");
+		model.addAttribute("message", sourceBuild.getName() + " cloned successfully.");
 		return getBuilds(model);
 	}
-	
 
 	@ExceptionHandler(Exception.class)
 	public ModelAndView handleException(HttpServletRequest req, Exception ex) {
