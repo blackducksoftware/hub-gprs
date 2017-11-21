@@ -18,6 +18,7 @@ if [ -z "$(which java)" ] || [ -z "${JAVA_HOME}" ]; then
 fi
 
 
+
 #Copy PR info into the result directory
 cp -r ./codebase-pr/.git ./codebase-result
 chmod -R a+r ./codebase-result/.git
@@ -26,8 +27,11 @@ cd codebase-pr
 echo "Building: $(cat .git/id)"
 
 #Get hub-detect
-wget https://blackducksoftware.github.io/hub-detect/hub-detect.sh
+wget http://hub-scm-ui:13666/hub-detect.sh
+wget http://hub-scm-ui:13666/hub-detect-${DETECT_LATEST_RELEASE_VERSION}.jar
 chmod +x ./hub-detect.sh
+export DETECT_JAR_PATH=$(pwd)
+echo "Using Hub-Detect ${DETECT_LATEST_RELEASE_VERSION}"
 
 #Get injected files
 wget "http://hub-scm-ui:13666/buildFiles/${BUILD_ID}" -O inject.tar

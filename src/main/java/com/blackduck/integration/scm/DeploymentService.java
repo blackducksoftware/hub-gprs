@@ -61,14 +61,17 @@ public class DeploymentService {
 	private final String hubUsername;
 
 	private final String hubPassword;
+	
+	private final String hubDetectVersion;
 
 	public DeploymentService(ConcourseClient concourseClient, BuildMonitor buildMonitor, String hubUrl,
-			String hubUsername, String hubPassword) {
+			String hubUsername, String hubPassword, String hubDetectVersion) {
 		this.concourseClient = concourseClient;
 		this.buildMonitor = buildMonitor;
 		this.hubUrl = hubUrl;
 		this.hubUsername = hubUsername;
 		this.hubPassword = hubPassword;
+		this.hubDetectVersion = hubDetectVersion;
 	}
 
 	private PipelineFactory pipelineFactory = new PipelineFactory();
@@ -85,6 +88,7 @@ public class DeploymentService {
 		fullParams.put("build_image_tag", build.getImageTag());
 		fullParams.put("hub_detect_arguments", build.getHubDetectArguments());
 		fullParams.put("build_command", Strings.nullToEmpty(build.getBuildCommand()));
+		fullParams.put("hub_detect_version", hubDetectVersion);
 		// Add project info
 		if (StringUtils.isNotBlank(build.getProjectName()	))
 			fullParams.put("project_name", build.getProjectName());

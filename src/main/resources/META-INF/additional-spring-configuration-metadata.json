@@ -38,5 +38,10 @@
     "name": "blackduck.hub-scm.static-location",
     "type": "java.lang.String",
     "description": "Local static files to be served to build nodes"
+  },
+  {
+    "name": "blackduck.hub-scm.hub-detect-version",
+    "type": "java.lang.String",
+    "description": "The version of hub-detect to be used."
   }
 ]}

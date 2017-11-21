@@ -25,4 +25,6 @@ debug:
 blackduck:
   hub-scm:
     static-location: /static
+    hub-detect-version: 2.0.0
+
     

@@ -91,7 +91,8 @@
 						"PROJECT_BUILD_COMMAND": "${build_command}",
 						"HUB_URL": "${hub_url}",
 						"HUB_DETECT_ARGS": "${args}",
-						"BUILD_ID": "${build_id}"
+						"BUILD_ID": "${build_id}",
+						"DETECT_LATEST_RELEASE_VERSION": "${hub_detect_version}"
 					},
 					"on_failure": {
 						"put": "codebase-pr",

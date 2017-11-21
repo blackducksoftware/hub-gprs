@@ -55,6 +55,9 @@ public class ApplicationConfig {
 	
 	@Value("${blackduck.hub-scm.static-location}")
 	private String localStaticDirectory;
+	
+	@Value("${blackduck.hub-scm.hub-detect-version}")
+	private String hubDetectVersion;
 
 	@Inject
 	private ConcourseConfig concourseConfiguration;
@@ -77,7 +80,7 @@ public class ApplicationConfig {
 	@Bean
 	public DeploymentService deploymentService() {
 		return new DeploymentService(concourseConfiguration.concourseClient(), this.buildMonitor(), hubUrl, hubUsername,
-				hubPassword);
+				hubPassword, hubDetectVersion);
 	}
 	
 	

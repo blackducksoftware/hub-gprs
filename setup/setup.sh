@@ -1,13 +1,6 @@
 #!/bin/bash
 
-#Do we have a JRE downloaded?
-if [ ! -d ./download ]; then
-    mkdir download
-fi;
-
-if [ ! -e ./download/*jdk*.tar.gz ]; then
-    wget http://cdn.azul.com/zulu/bin/zulu8.25.0.1-jdk8.0.152-linux_x64.tar.gz -O download/jdk.tar.gz
-fi
+. downloadDependencies.sh
 
 if [ -z "$JAVA_HOME" ]; then
     echo "JAVA_HOME is not set. Please set it to the location of your JDK."
@@ -55,7 +48,7 @@ echo DB_PASSWRD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | h
 #Build UI image
 cd ..
 ./gradlew build  -x test 
-docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${hubHost}:${hubPort}"
+docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${hubHost}:${hubPort}" --build-arg HUB_DETECT_VERSION="${HUB_DETECT_VERSION}"
 cd setup
 
 
