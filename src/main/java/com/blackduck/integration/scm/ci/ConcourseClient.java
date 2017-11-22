@@ -79,7 +79,7 @@ public class ConcourseClient {
 	private static final Logger logger = LoggerFactory.getLogger(ConcourseClient.class);
 
 	private static final String codeResourceName = "codebase-pr";
-	
+
 	private static final String buildTaskName = "hub-detect";
 
 	private final String concourseUrl;
@@ -171,19 +171,18 @@ public class ConcourseClient {
 	}
 
 	/**
-	 * Returns a list of Concourse build IDs that are currently in progress
+	 * Returns a list of Concourse build IDs and pipeline names that are currently
+	 * in progress
 	 * 
 	 * @return
 	 */
-	public List<Long> getActiveCiBuildIds() {
+	public List<Build> getActiveCiBuildIds() {
 		ResponseEntity<String> responseFromCi = restTemplate.getForEntity(concourseUrl + "/api/v1/builds?limit=100000",
 				String.class);
 		if (responseFromCi.getStatusCode().is2xxSuccessful()) {
 			return deserializeBuilds(responseFromCi.getBody())
 					// Active builds only
-					.filter(puild -> StringUtils.isBlank(puild.getEndTime()))
-					// Return IDs
-					.map(Build::getId).map(Long::parseLong).collect(Collectors.toList());
+					.filter(build -> StringUtils.isBlank(build.getEndTime())).collect(Collectors.toList());
 		} else
 			throw new CICommunicationException(responseFromCi.getStatusCode());
 	}
@@ -207,8 +206,8 @@ public class ConcourseClient {
 		} catch (HttpServerErrorException e) {
 			// Sometimes a POST to the check URI fails with a 500 and no explanation or
 			// meaningful log output because Concourse.
-			logger.warn("Unable to immediately check for code changes for pipeline: " + pipelineName + ": " + e.getMessage() + "\n"
-					+ e.getResponseBodyAsString());
+			logger.warn("Unable to immediately check for code changes for pipeline: " + pipelineName + ": "
+					+ e.getMessage() + "\n" + e.getResponseBodyAsString());
 		}
 	}
 
@@ -230,7 +229,7 @@ public class ConcourseClient {
 					+ e.getResponseBodyAsString());
 		}
 	}
-	
+
 	public void addPipeline(String pipelineName, String pipelineConfig) {
 		String escapedPipelineName = escapePipelineName(pipelineName);
 		String putUrl = baseUrl + "/pipelines/" + escapedPipelineName + "/config";
@@ -325,7 +324,7 @@ public class ConcourseClient {
 		String pruneUrl = concourseUrl + "/api/v1/workers/{id}/prune";
 		pruneableWorkerNames.forEach(workerName -> {
 			try {
-				restTemplate.put(pruneUrl,"{}", workerName);
+				restTemplate.put(pruneUrl, "{}", workerName);
 			} catch (Throwable t) {
 				logger.error("Error pruning workers.", t);
 			}

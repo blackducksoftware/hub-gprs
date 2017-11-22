@@ -41,6 +41,8 @@ public class Build {
 	String startTime;
 	@JsonProperty(value = "end_time")
 	String endTime;
+	@JsonProperty(value = "pipeline_name")
+	String pipelineName;
 
 	public String getId() {
 		return id;
@@ -88,6 +90,14 @@ public class Build {
 
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
+	}
+
+	public String getPipelineName() {
+		return pipelineName;
+	}
+
+	public void setPipelineName(String pipelineName) {
+		this.pipelineName = pipelineName;
 	}
 
 }

@@ -40,13 +40,18 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blackduck.integration.scm.ci.BuildEvent;
 import com.blackduck.integration.scm.ci.ConcourseClient;
 import com.blackduck.integration.scm.dao.CiBuildDao;
+import com.blackduck.integration.scm.entity.Build;
 import com.blackduck.integration.scm.entity.CiBuild;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
 
 import rx.Observable;
 
@@ -64,6 +69,9 @@ public class BuildMonitor {
 
 	private final Set<Long> monitoredBuilds = Collections.synchronizedSet(new HashSet<>());
 
+	private Cache<Long, String> pipelineIdCache = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES)
+			.build();
+
 	/**
 	 * 
 	 * @param concourseClient
@@ -80,20 +88,25 @@ public class BuildMonitor {
 	public void startMonitoring() {
 		scheduler.scheduleAtFixedRate(() -> {
 			try {
-				List<Long> activeBuilds = concourseClient.getActiveCiBuildIds();
-				this.monitor(activeBuilds);
+				List<com.blackduck.integration.scm.ci.Build> activeCiBuilds = concourseClient.getActiveCiBuildIds();
+				Set<Long> activeCiBuildIds = activeCiBuilds.stream()
+						// Associate every build with its pipeline name for logging purposes.
+						.peek(ciBuild -> pipelineIdCache.put(Long.parseLong(ciBuild.getId()), ciBuild.getPipelineName()))
+						// Monitor for events
+						.map(ciBuild -> Long.parseLong(ciBuild.getId())).collect(Collectors.toSet());
+				monitor(activeCiBuildIds);
+
 			} catch (Throwable t) {
 				logger.error("Error monitoring CI builds.", t);
 			}
 		}, 15, 5, TimeUnit.SECONDS);
 	}
 
-	private void monitor(List<Long> ciBuildIds) {
+	private void monitor(Set<Long> ciBuildIds) {
 		Set<Long> toMonitor = new HashSet<>(ciBuildIds);
 		// Keep from monitoring what's already monitored
 		synchronized (monitoredBuilds) {
 			toMonitor.removeAll(monitoredBuilds);
-
 			if (toMonitor.isEmpty())
 				return;
 
@@ -135,8 +148,8 @@ public class BuildMonitor {
 
 	private void updateBuildLog(long buildId, BuildEvent event) {
 		if (buildLogDirectory.isPresent()) {
-
-			Path logFilePath = Paths.get(buildLogDirectory.get(), Long.toString(buildId) + ".log");
+			String pipelineId = pipelineIdCache.getIfPresent(buildId);
+			Path logFilePath = Paths.get(buildLogDirectory.get(), pipelineId + ".log");
 			// Should we create the file?
 			if (!Files.exists(logFilePath)) {
 				// Double-check synchronously before creating a new file!
