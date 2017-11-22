@@ -3,6 +3,7 @@ package com.blackduck.integration.scm.controller;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
@@ -21,7 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.blackduck.integration.scm.dao.FileDao;
+import com.blackduck.integration.scm.entity.Build;
 import com.blackduck.integration.scm.entity.FileContent;
+import com.blackduck.integration.scm.entity.FileInjection;
 
 @Controller
 @RequestMapping("/files")
@@ -79,10 +82,20 @@ public class FileController {
 	@DeleteMapping("/{id}")
 	@Transactional
 	public String deleteById(@PathVariable long id, Model model) {
+		FileContent fileContent = fileDao.findById(id);
+		
+		// Ensure content is not used
+		if (!fileContent.getInjections().isEmpty()) {
+			String usedBy = fileContent.getInjections().stream().map(FileInjection::getBuild).map(Build::getName)
+					.collect(Collectors.joining(", "));
+			model.addAttribute("message",
+					"Unable to delete file " + fileContent.getName() + " as it is in use by: " + usedBy);
+			return listFiles(model);
+		}
+
 		fileDao.deleteFileContent(id);
 		model.addAttribute("message", "File deleted successfully.");
 		return listFiles(model);
 	}
-	
-	
+
 }

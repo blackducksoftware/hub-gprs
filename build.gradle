@@ -15,7 +15,7 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
 group = 'com.blackduck.hub.concourse'
-version = '0.2.9'
+version = '0.2.10'
 sourceCompatibility = 1.8
 
 repositories {
