@@ -101,8 +101,8 @@ public class BuildMonitor {
 			}
 		}, 15, 5, TimeUnit.SECONDS);
 
-		//If we start up in a stalled state, recover from it. 
-		concourseClient.pruneWorkers();
+		//Automatically recover from worker stalls
+		scheduler.scheduleAtFixedRate(concourseClient::pruneWorkers, 1, 5, TimeUnit.MINUTES);
 	}
 
 	private void monitor(Set<Long> ciBuildIds) {
