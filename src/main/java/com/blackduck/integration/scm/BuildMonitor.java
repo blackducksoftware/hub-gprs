@@ -100,6 +100,9 @@ public class BuildMonitor {
 				logger.error("Error monitoring CI builds.", t);
 			}
 		}, 15, 5, TimeUnit.SECONDS);
+
+		//If we start up in a stalled state, recover from it. 
+		concourseClient.pruneWorkers();
 	}
 
 	private void monitor(Set<Long> ciBuildIds) {
