@@ -140,12 +140,13 @@ public class BuildController {
 		// Ensure no other builds with this name on source. Not super-efficient, but the
 		// attribute that defines the "name" can vary based on source, and we're not
 		// expecting millions of repos on one SCM.
-		Optional<Build> priorBuild = buildDao.findAllBySourceId(source.getId()).stream().filter(existingBuild -> build.getName().equals(existingBuild.getName())).findAny();
+		Optional<Build> priorBuild = buildDao.findAllBySourceId(source.getId()).stream()
+				.filter(existingBuild -> build.getName().equals(existingBuild.getName())).findAny();
 		if (priorBuild.isPresent()) {
-			model.addAttribute("message", "A build/scan of "+build.getName()+" already exists on "+source.getName()+".");
+			model.addAttribute("message",
+					"A build/scan of " + build.getName() + " already exists on " + source.getName() + ".");
 			return getBuilds(model);
 		}
-				
 
 		Build createdBuild = buildDao.create(build);
 		createNewFileInjections(createdBuild.getId(), allParameters);
@@ -164,6 +165,12 @@ public class BuildController {
 	@PostMapping("/builds/{id}/trigger")
 	public String triggerBuild(@PathVariable long id, Model model) {
 		Build build = buildDao.findById(id);
+		BuildStatus status = deploymentService.getStatus(build.getPipeline());
+		// Do not trigger if build is already running.
+		if (status == BuildStatus.IN_PROGRESS) {
+			model.addAttribute("message", "Build/scan of " + build.getName() + " is already running.");
+			return getBuilds(model);
+		}
 		try {
 			deploymentService.triggerBuild(build.getPipeline());
 			model.addAttribute("message", "Build/scan of " + build.getName() + " triggered.");
