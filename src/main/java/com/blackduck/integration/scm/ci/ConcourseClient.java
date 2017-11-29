@@ -368,8 +368,21 @@ public class ConcourseClient {
 			workerInfo.append("\n  Resource Types: "+worker.getResourceTypes().stream().map(rt-> rt.getType()+":"+rt.getImage()).collect(Collectors.joining(", ")));
 			return workerInfo.toString();
 		}).collect(Collectors.toList());
+		
 		StringBuilder result = new StringBuilder("Workers: "+workerInfos.size()+"\n\n");
 		result.append(StringUtils.join(workerInfos, "\n\n"));
+		
+		List<Build> builds = getActiveCiBuildIds();
+		result.append("\n\nActive builds: "+builds.size());
+		
+		builds.forEach(build -> {
+			result.append('\n');
+			result.append("ID: "+build.getId());
+			result.append(", Pipeline: "+build.getPipelineName());
+			result.append(", Start time: "+build.getStartTime());
+			result.append(", Status: "+build.getStatus());
+		});
+		
 		return result.toString();
 	}
 

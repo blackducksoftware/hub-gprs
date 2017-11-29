@@ -1,13 +1,7 @@
 <html>
 <#include "common/head.ftl"/>
 <body>
-	<div class="navbar">
-		<img class="navbar_logo"
-			src="/img/NewBlackDuckLogo_WhiteColor_Website.png" />
-		<ul class="navbar">
-			<li><a href="/" class="navbar_link">Main</a></li>
-		</ul>
-	</div>
+	<#include "common/navbar.ftl"/>
 	
 	<div class="page_content" id="error_content">
 		<h1 align="center">Debug Information</h1>
