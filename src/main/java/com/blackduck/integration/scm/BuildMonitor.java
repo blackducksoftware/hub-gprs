@@ -91,7 +91,8 @@ public class BuildMonitor {
 				List<com.blackduck.integration.scm.ci.Build> activeCiBuilds = concourseClient.getActiveCiBuildIds();
 				Set<Long> activeCiBuildIds = activeCiBuilds.stream()
 						// Associate every build with its pipeline name for logging purposes.
-						.peek(ciBuild -> pipelineIdCache.put(Long.parseLong(ciBuild.getId()), ciBuild.getPipelineName()))
+						.peek(ciBuild -> pipelineIdCache.put(Long.parseLong(ciBuild.getId()),
+								ciBuild.getPipelineName()))
 						// Monitor for events
 						.map(ciBuild -> Long.parseLong(ciBuild.getId())).collect(Collectors.toSet());
 				monitor(activeCiBuildIds);
@@ -101,7 +102,7 @@ public class BuildMonitor {
 			}
 		}, 15, 5, TimeUnit.SECONDS);
 
-		//Automatically recover from worker stalls
+		// Automatically recover from worker stalls
 		scheduler.scheduleAtFixedRate(concourseClient::pruneWorkers, 1, 5, TimeUnit.MINUTES);
 	}
 
@@ -174,6 +175,13 @@ public class BuildMonitor {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns human-readable state/troubleshooting/debug info
+	 */
+	public String getDebugInfo() {
+		return concourseClient.getDebugInfo() + "\n\n" + "Monitored builds: " + StringUtils.join(monitoredBuilds, ", ");
 	}
 
 }

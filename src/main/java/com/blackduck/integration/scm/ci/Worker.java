@@ -1,12 +1,20 @@
 package com.blackduck.integration.scm.ci;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "status" })
 public class Worker {
+	public static class ResourceTypeList extends ArrayList<ResourceType>{
+		private static final long serialVersionUID = 100181760431481561L;
+	}
+	
 	public enum Status {
 		STALLED, RUNNING, LANDING, LANDED
 	}
@@ -21,6 +29,9 @@ public class Worker {
 	@JsonProperty(value = "active_containers")
 	private int activeContainers;
 
+	@JsonProperty(value="resource_types")
+	private ResourceTypeList resourceTypes;
+	
 	public int getActiveVolumes() {
 		return activeVolumes;
 	}
@@ -68,6 +79,14 @@ public class Worker {
 
 	public void setStatusAsString(String status) {
 		setStatus(Status.valueOf(StringUtils.upperCase(status)));
+	}
+	
+	public ResourceTypeList getResourceTypes() {
+		return resourceTypes;
+	}
+	
+	public void setResourceTypes(ResourceTypeList resourceTypes) {
+		this.resourceTypes = resourceTypes;
 	}
 
 

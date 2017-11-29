@@ -43,6 +43,7 @@
 		});
 	</script>
 </div>
+<#include "common/footer.ftl"/>
 
 <!-- Modal -->
 	<div id="modalView" class="modal fade" role="dialog">
@@ -61,5 +62,6 @@
 				</div>
 			</div>
 		</div>
+		
 </body>
 </html>

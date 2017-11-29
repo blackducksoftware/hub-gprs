@@ -310,7 +310,6 @@ public class ConcourseClient {
 		} catch (IOException ioe) {
 			throw new CICommunicationException("Unable to parse worker list", ioe);
 		}
-
 	}
 
 	/**
@@ -354,6 +353,24 @@ public class ConcourseClient {
 				.map(String::new).takeWhile(text -> !"event: end".equals(text))
 				.filter(text -> StringUtils.startsWith(text, "data:"))
 				.map(text -> StringUtils.substringAfter(text, "data:")).map(ConcourseClient::deserializeBuildEvent);
+	}
+	
+	/**
+	 * Returns human-readible information about the state of the Concourse system.
+	 * @return
+	 */
+	public String getDebugInfo() {
+		List<String> workerInfos = getWorkers().map(worker -> {
+			StringBuilder workerInfo = new StringBuilder();
+			workerInfo.append("Worker: "+worker.getName());
+			workerInfo.append("\n  Active Containers: "+worker.getActiveContainers());
+			workerInfo.append("\n  Status: "+worker.getStatusAsString());
+			workerInfo.append("\n  Resource Types: "+worker.getResourceTypes().stream().map(rt-> rt.getType()+":"+rt.getImage()).collect(Collectors.joining(", ")));
+			return workerInfo.toString();
+		}).collect(Collectors.toList());
+		StringBuilder result = new StringBuilder("Workers: "+workerInfos.size()+"\n\n");
+		result.append(StringUtils.join(workerInfos, "\n\n"));
+		return result.toString();
 	}
 
 	private static BuildEvent deserializeBuildEvent(String data) {

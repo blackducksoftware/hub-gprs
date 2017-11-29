@@ -19,5 +19,6 @@
 	
 	<div id="modalView">
 	</div>
+	<#include "common/footer.ftl"/>
 </body>
 </html>
