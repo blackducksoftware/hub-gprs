@@ -1,10 +1,25 @@
 #!/bin/bash
 
 export HUB_DETECT_VERSION=2.2.0
+export EXPECTED_JDK_MD5=cc6e9ff13c27d27033220208d5450f2d
+
+compareMd5Sum(){
+	file=$1
+	expected=$2
+	actual="$(cat ""${file}"" 2>/dev/null | md5)"
+	if [ "$expected" != "$actual" ]; then
+		echo 'bad'
+	fi
+}
 
 if [ ! -d ./download ]; then
     mkdir download
 fi;
+
+if [ -e ./download/jdk.tar.gz ] && [ "$(compareMd5Sum ./download/jdk.tar.gz $EXPECTED_JDK_MD5)" = "bad" ]; then
+	echo Incorrect prior JDK download detected $(cat ./download/jdk.tar.gz | md5). Re-downloading...
+	rm ./download/jdk.tar.gz
+fi
 
 #Download the JRE/JDK
 if [ ! -e ./download/*jdk*.tar.gz ]; then
