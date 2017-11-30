@@ -22,6 +22,7 @@
 
 package com.blackduck.integration.scm.controller;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,6 +66,7 @@ import com.blackduck.integration.scm.entity.ParamDefinition;
 import com.blackduck.integration.scm.entity.ParamDefinition.ParamType;
 import com.blackduck.integration.scm.entity.Source;
 import com.blackduck.integration.scm.entity.SourceType;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
@@ -334,15 +336,31 @@ public class BuildController {
 			Model model) {
 		Build sourceBuild = buildDao.findById(sourceBuildId);
 		String definingAttribute = sourceBuild.getSource().getType().getBuildIdentifierProperty();
+		List<String> messages = new LinkedList<>();
+		List<Build> allBuildsFromSameSource = buildDao.findAllBySourceId(sourceBuild.getSource().getId());
+		Set<String> existingBuildDefiningvalues = allBuildsFromSameSource.stream()
+				.map(build -> build.getProperties().get(definingAttribute).toString()).collect(Collectors.toSet());
 		for (String cloneValue : cloneValues) {
+			//Ignore empty targets
+			if (StringUtils.isBlank(cloneValue)) {
+				continue;
+			}
+			// Does the target already exist?
+			if (existingBuildDefiningvalues.contains(cloneValue)) {
+				messages.add("Unable to create " + cloneValue + ". It already exists.");
+				continue;
+			}
+
 			Build newBuild = buildDao.clone(sourceBuildId);
 			newBuild.getProperties().setProperty(definingAttribute, cloneValue);
 			newBuild.setPipeline(generatePipelineName(newBuild.getName()));
 			Build createdBuild = buildDao.create(newBuild);
 			// Once the build is persisted, we can deploy it.
 			deploymentService.deploy(createdBuild);
+			messages.add(createdBuild.getName() + " created successfully");
 		}
-		model.addAttribute("message", sourceBuild.getName() + " cloned successfully.");
+
+		model.addAttribute("message", StringUtils.join(messages, "<br />"));
 		return getBuilds(model);
 	}
 
