@@ -14,8 +14,8 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
-group = 'com.blackduck.hub.concourse'
-version = '1.0.0'
+group = 'com.blackduck.hub.gprs'
+version = '1.0.0-rc1'
 sourceCompatibility = 1.8
 
 jar {

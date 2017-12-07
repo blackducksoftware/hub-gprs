@@ -1,5 +1,5 @@
 <head>
-<title>Hub SCM Integration</title>
+<title>BlackDuck Github Pull Request Scanner Integration</title>
 <meta http-equiv="cache-control" content="max-age=0" />
 <meta http-equiv="cache-control" content="no-cache" />
 <meta http-equiv="expires" content="0" />
