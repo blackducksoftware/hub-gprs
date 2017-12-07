@@ -22,8 +22,7 @@ read hubPort
 echo -n "Enter the username of your HUB installation and press [ENTER]: "
 read hubUsername
 
-echo -n "Enter the password of your HUB installation and press [ENTER]: "
-read hubPassword
+read -s -p "Enter the password of your HUB installation and press [ENTER]: " hubPassword
 
 
 echo HUB_URL=https://${hubHost}:${hubPort} > .env
