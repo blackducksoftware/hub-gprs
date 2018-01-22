@@ -27,9 +27,8 @@ under the License.
 	<div class="page_content" id="page_content">
 		<h1 align="center">Welcome to Pull Request Scanner!</h1>
 		<p align="center">
-			To start, configure one or more <a href="#"
-				onclick="loadPageInMain('/sources')">SCMs</a>. Then, configure one
-			or more <a href="#" onclick="loadPageInMain('/builds')">repositories.</a>
+			To start, configure one or more <a href="/sources">SCMs</a>. Then, configure one
+			or more <a href="/builds">repositories.</a>
 		</p>
 		<p align="center">
 			<br />
