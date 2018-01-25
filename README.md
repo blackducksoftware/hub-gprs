@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="25%" height="25%" src="https://www.blackducksoftware.com/sites/default/files/images/Logos/BD-S.png">
+</p>
+
 ## Overview ##
 Solution to automatically scan pull requests in Github Enterprise and Github.com with [Black Duck Hub](https://www.blackducksoftware.com/products/hub).
 
