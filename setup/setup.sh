@@ -13,21 +13,28 @@ if [ $? -ne 0 ]; then
     exit 127
 fi
 
-echo -n "Enter the hostname of your HUB installation and press [ENTER]: "
-read hubHost
+if [ -z "${HUB_HOST}" ]; then
+    echo -n "Enter the hostname of your HUB installation and press [ENTER]: "
+    read HUB_HOST
+fi
 
-echo -n "Enter the port of your HUB installation (typically 443) and press [ENTER]: "
-read hubPort
+if [ -z "${HUB_PORT}" ]; then
+    echo -n "Enter the port of your HUB installation (typically 443) and press [ENTER]: "
+    read HUB_PORT
+fi
 
-echo -n "Enter the username of your HUB installation and press [ENTER]: "
-read hubUsername
+if [ -z "${HUB_USERNAME}"]; then
+    echo -n "Enter the username of your HUB installation and press [ENTER]: "
+    read HUB_USERNAME
+fi
 
-read -s -p "Enter the password of your HUB installation and press [ENTER]: " hubPassword
+if [ -z "${HUB_PASSWORD}"]
+    read -s -p "Enter the password of your HUB installation and press [ENTER]: " HUB_PASSWORD
+fi
 
-
-echo HUB_URL=https://${hubHost}:${hubPort} > .env
-echo HUB_USERNAME=${hubUsername} >> .env
-echo HUB_PASSWORD=${hubPassword} >> .env
+echo HUB_HOST=https://${HUB_HOST}:${HUB_PORT} > .env
+echo HUB_USERNAME=${HUB_USERNAME} >> .env
+echo HUB_PASSWORD=${HUB_PASSWORD} >> .env
 
 mkdir -p keys/web keys/worker keys/ui
 
@@ -47,7 +54,7 @@ echo DB_PASSWRD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | h
 #Build UI image
 cd ..
 ./gradlew build  -x test 
-docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${hubHost}:${hubPort}" --build-arg HUB_DETECT_VERSION="${HUB_DETECT_VERSION}"
+docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_HOST="${HUB_HOST}:${HUB_PORT}" --build-arg HUB_DETECT_VERSION="${HUB_DETECT_VERSION}"
 cd setup
 
 
