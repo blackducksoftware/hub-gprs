@@ -1,4 +1,5 @@
 #!/bin/bash
+export LC_CTYPE=C
 
 . downloadDependencies.sh
 
