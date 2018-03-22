@@ -5,10 +5,10 @@ install: true
 jdk:
   - oraclejdk8
 
-  notifications:
-    email:
-      recipients:
-        - ybronshteyn@blackducksoftware.com
+notifications:
+  email:
+    recipients:
+      - ybronshteyn@blackducksoftware.com
   
 script:
   ./gradlew build
