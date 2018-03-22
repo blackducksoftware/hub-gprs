@@ -31,3 +31,4 @@ nbdist/
 /setup/*.log
 /setup/.*docker-compose*yml
 /setup/download/
+/.vscode/

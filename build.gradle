@@ -13,6 +13,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
+apply from: "dependencies.gradle"
 
 group = 'com.blackduck.hub.gprs'
 version = '1.0.0'
@@ -30,6 +31,16 @@ repositories {
 	maven {
         url 'https://maven.repository.redhat.com/ga/'
     	}
+}
+
+configurations.all {
+  resolutionStrategy {  
+    eachDependency { DependencyResolveDetails details ->
+      if (details.requested.group == 'org.apache.tomcat') {
+        details.useVersion versions.tomcat
+      }
+    }
+  }
 }
 
 
