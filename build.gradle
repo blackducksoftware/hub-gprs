@@ -64,7 +64,7 @@ dependencies {
 	compile group: 'org.apache.commons', name: 'commons-compress', version: '1.15'
 	compile group: 'javax.inject', name: 'javax.inject', version: '1.0.0.redhat-6'
 	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
-	compile group: 'com.blackducksoftware.integration', name: 'hub-common', version: '18.1.0'
+	compile group: 'com.blackducksoftware.integration', name: 'hub-common', version: '29.0.0'
 
 		
 	runtime('org.postgresql:postgresql')

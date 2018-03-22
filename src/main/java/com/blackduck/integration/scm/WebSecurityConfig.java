@@ -44,9 +44,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		//Allow public access to static resources
 		http.authorizeRequests().antMatchers(HttpMethod.GET, "/img/**", "/js/**","/css/**").permitAll()
 		//Must have codescanner role to configure builds
-		.antMatchers(HttpMethod.PUT, "/builds/**").hasAnyAuthority("codescanner")
-		.antMatchers(HttpMethod.POST, "/builds").hasAnyAuthority("codescanner")
-		.antMatchers(HttpMethod.DELETE, "/builds/**").hasAnyAuthority("codescanner")
+		.antMatchers(HttpMethod.PUT, "/builds/**").hasAnyAuthority("code_scanner")
+		.antMatchers(HttpMethod.POST, "/builds").hasAnyAuthority("code_scanner")
+		.antMatchers(HttpMethod.DELETE, "/builds/**").hasAnyAuthority("code_scanner")
 		//Authenticate everything else
 		.anyRequest().authenticated().and().httpBasic()
 		//Add logout URL

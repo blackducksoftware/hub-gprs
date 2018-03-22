@@ -110,7 +110,7 @@ public class BuildController {
 		return "build";
 	}
 
-	@PreAuthorize("ROLE_codescanner")
+	@PreAuthorize("hasRole('ROLE_code_scanner')")
 	@PostMapping("/builds")
 	public String deployNewBuild(@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,

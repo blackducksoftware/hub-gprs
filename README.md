@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/blackducksoftware/hub-gprs.svg?branch=master)](https://travis-ci.org/blackducksoftware/hub-gprs) 
-[![Black Duck Security Risk](https://copilot.blackducksoftware.com/github/repos/blackducksoftware/hub-gprs/branches/master/badge-risk.svg)](https://copilot.blackducksoftware.com/github/repos/blackducksoftware/hub-gprs/branches/master)
+[![Black Duck Security Risk](https://copilot.blackducksoftware.com/github/repos/blackducksoftware/hub-gprs/branches/release/HUB_4_5_0/badge-risk.svg)](https://copilot.blackducksoftware.com/github/repos/blackducksoftware/hub-gprs/branches/release/HUB_4_5_0)
 
 <p align="center">
   <img width="25%" height="25%" src="https://www.blackducksoftware.com/sites/default/files/images/Logos/BD-S.png">

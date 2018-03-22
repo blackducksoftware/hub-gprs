@@ -33,7 +33,8 @@ if [ ! -e ./download/*jdk*.tar.gz ]; then
 fi
 
 #Download hub-detect
-if [ ! -e ./download/hub-detect.sh ]; then
+if [ ! -e ./download/hub-detect.sh ] || [ ! -e ./download/hub-detect-${HUB_DETECT_VERSION}.jar ]; then 
+    rm -f download/hub-detect*
     wget "https://blackducksoftware.github.io/hub-detect/hub-detect.sh" -O download/hub-detect.sh && wget "https://test-repo.blackducksoftware.com/artifactory/bds-integrations-release/com/blackducksoftware/integration/hub-detect/${HUB_DETECT_VERSION}/hub-detect-${HUB_DETECT_VERSION}.jar" -O download/hub-detect-${HUB_DETECT_VERSION}.jar
     downloadSuccess=$?
     if [ "${downloadSuccess}" -ne "0" ]; then
