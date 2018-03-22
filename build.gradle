@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.8.RELEASE'
+		springBootVersion = '1.5.10.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -41,7 +41,7 @@ dependencies {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 	}
 	compile ('org.springframework.boot:spring-boot-starter-undertow')
-	compile("com.fasterxml.jackson.core:jackson-databind")
+	compile("com.fasterxml.jackson.core:jackson-databind:2.8.11.1")
 	compile('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
 	
 	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.4'

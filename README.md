@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/blackducksoftware/hub-gprs.svg?branch=master)](https://travis-ci.org/blackducksoftware/hub-gprs) 
+[![Black Duck Security Risk](https://copilot.blackducksoftware.com/github/repos/blackducksoftware/hub-gprs/branches/master/badge-risk.svg)](https://copilot.blackducksoftware.com/github/repos/blackducksoftware/hub-gprs/branches/master)
+
 <p align="center">
   <img width="25%" height="25%" src="https://www.blackducksoftware.com/sites/default/files/images/Logos/BD-S.png">
 </p>
