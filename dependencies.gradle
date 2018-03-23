@@ -1,5 +1,6 @@
 ext {
     versions = [
-        tomcat: '8.5.29'
+        tomcat: '8.5.29',
+        jackson_databind: '2.8.11.1'
     ]
 }

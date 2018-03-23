@@ -17,6 +17,7 @@ apply from: "dependencies.gradle"
 
 group = 'com.blackduck.hub.gprs'
 version = '1.0.1'
+
 sourceCompatibility = 1.8
 
 jar {
@@ -52,12 +53,11 @@ dependencies {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 	}
 	compile ('org.springframework.boot:spring-boot-starter-undertow')
-	compile("com.fasterxml.jackson.core:jackson-databind:2.8.11.1")
-	compile('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
-	
+	compile(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson_databind){
+		force=true
+	}
 	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.4'
-  	compile group: 'io.reactivex', name: 'rxapache-http', version: '0.21.0'
-	
+  compile group: 'io.reactivex', name: 'rxapache-http', version: '0.21.0'
 	compile 'com.google.guava:guava:23.0'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
 	compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
