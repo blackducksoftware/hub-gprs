@@ -15,7 +15,7 @@ fi
 URL_SETTING=$(cat .env | grep HUB_URL)
 UNPREFIXED_URL=$(cut -d '/' -f 3 <<< "${URL_SETTING}")
 cd ..
-./gradlew clean build  -x test 
+./gradlew clean build  -x test --refresh-dependencies
 docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${UNPREFIXED_URL}" --build-arg=HUB_DETECT_VERSION="${HUB_DETECT_VERSION}"
 cd setup
 

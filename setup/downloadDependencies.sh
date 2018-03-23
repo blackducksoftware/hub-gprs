@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export HUB_DETECT_VERSION=2.2.0
-export EXPECTED_JDK_MD5=cc6e9ff13c27d27033220208d5450f2d
+export HUB_DETECT_VERSION=3.1.0
+export EXPECTED_JDK_MD5=9c02c89f37d217d229203e59b57246a8
 
 compareMd5Sum(){
 	file=$1
@@ -23,7 +23,7 @@ fi
 
 #Download the JRE/JDK
 if [ ! -e ./download/*jdk*.tar.gz ]; then
-    wget http://cdn.azul.com/zulu/bin/zulu8.25.0.1-jdk8.0.152-linux_x64.tar.gz -O download/jdk.tar.gz
+    wget https://cdn.azul.com/zulu/bin/zulu8.28.0.1-jdk8.0.163-linux_x64.tar.gz -O download/jdk.tar.gz
     downloadSuccess=$?
     if [ "${downloadSuccess}" -ne "0" ]; then
         >&2 echo JDK Download failed.
@@ -33,7 +33,8 @@ if [ ! -e ./download/*jdk*.tar.gz ]; then
 fi
 
 #Download hub-detect
-if [ ! -e ./download/hub-detect.sh ]; then
+if [ ! -e ./download/hub-detect.sh ] || [ ! -e ./download/hub-detect-${HUB_DETECT_VERSION}.jar ]; then 
+    rm -f download/hub-detect*
     wget "https://blackducksoftware.github.io/hub-detect/hub-detect.sh" -O download/hub-detect.sh && wget "https://test-repo.blackducksoftware.com/artifactory/bds-integrations-release/com/blackducksoftware/integration/hub-detect/${HUB_DETECT_VERSION}/hub-detect-${HUB_DETECT_VERSION}.jar" -O download/hub-detect-${HUB_DETECT_VERSION}.jar
     downloadSuccess=$?
     if [ "${downloadSuccess}" -ne "0" ]; then

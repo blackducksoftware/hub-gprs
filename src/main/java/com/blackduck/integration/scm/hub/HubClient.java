@@ -32,24 +32,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blackducksoftware.integration.exception.IntegrationException;
-import com.blackducksoftware.integration.hub.api.UrlConstants;
-import com.blackducksoftware.integration.hub.model.HubView;
-import com.blackducksoftware.integration.hub.model.view.UserView;
+import com.blackducksoftware.integration.hub.api.generated.discovery.ApiDiscovery;
+import com.blackducksoftware.integration.hub.api.generated.view.RoleAssignmentView;
+import com.blackducksoftware.integration.hub.api.generated.view.RoleView;
+import com.blackducksoftware.integration.hub.api.generated.view.UserView;
+import com.blackducksoftware.integration.hub.proxy.ProxyInfoBuilder;
+import com.blackducksoftware.integration.hub.request.Request;
 import com.blackducksoftware.integration.hub.rest.CredentialsRestConnection;
-import com.blackducksoftware.integration.hub.service.HubResponseService;
+import com.blackducksoftware.integration.hub.service.HubService;
 import com.blackducksoftware.integration.log.Slf4jIntLogger;
 
 public class HubClient {
-	private static class HubUserInfo extends UserView{
-		public String id;
-		public String roleAssignmentsUrl;
-	}
-	
-	private static class HubUserRole extends HubView{
-		public String name;
-		public String roleKey;
-	}
-	
+
 
 	private static final Logger logger = LoggerFactory.getLogger(HubClient.class);
 
@@ -69,17 +63,24 @@ public class HubClient {
 			throw new HubCommunicationException("Illegal URL: " + url, e);
 		}
 		try {
-			CredentialsRestConnection connection = new CredentialsRestConnection(new Slf4jIntLogger(logger), hubUrl, username, password, 22);
+			CredentialsRestConnection connection = new CredentialsRestConnection(new Slf4jIntLogger(logger), hubUrl, username, password, 22, new ProxyInfoBuilder().build());
 
-			HubResponseService responseService = new HubResponseService(connection);
+			HubService hubService = new HubService(connection);
 			
-			final HubUserInfo currentUser = responseService.getItem(hubUrl+"/api/v1/"+UrlConstants.SEGMENT_CURRENT_USER, HubUserInfo.class);
+			
+			UserView currentUser = hubService.getResponse(ApiDiscovery.CURRENT_USER_LINK_RESPONSE);
 			if (Boolean.FALSE.equals(currentUser.active)) {
 				throw new HubCommunicationException("User " + username + " is inactive.");
 			}
 			
-			List<HubUserRole> userRoles = responseService.getAllItems(currentUser.roleAssignmentsUrl, HubUserRole.class);
-			List<String> roles = userRoles.stream().map(role->role.roleKey).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+			List<RoleAssignmentView> roleViews = hubService.getAllResponses(currentUser, UserView.ROLES_LINK_RESPONSE);
+		
+			List<String> roles = roleViews.stream()
+					.map(role->role.name)
+					.filter(StringUtils::isNotBlank)
+					.map(StringUtils::lowerCase)
+					.map(name -> StringUtils.replaceChars(name, ' ', '_'))
+					.collect(Collectors.toList());
 			return roles;
 
 		} catch (IntegrationException e) {
