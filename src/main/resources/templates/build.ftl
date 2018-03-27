@@ -1,4 +1,4 @@
-
+<#ftl outputFormat="HTML">
 <h1>
 	<#if build??>Edit<#else>Add</#if> repository</h1>
 <div id="messageDiv" class="message">

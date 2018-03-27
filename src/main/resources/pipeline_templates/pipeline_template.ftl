@@ -1,3 +1,4 @@
+<#ftl outputFormat="JSON">
 {
 	"groups": null,
 	"resources": [
@@ -60,12 +61,12 @@
 						},
 						"run": {
 						<#-- Compute arguments -->
-						<#assign args="${hub_detect_arguments}">
+						<#assign args="${hub_detect_arguments?jString}">
 						<#if project_name?hasContent>
-							<#assign args="${args} \\\"--detect.project.name='${project_name}'\\\"">
+							<#assign args="${args} \\\"--detect.project.name=$'${project_name?jsString?jString}'\\\"">
 						</#if>
 						<#if version_name?hasContent>
-							<#assign args="${args} \\\"--detect.project.version.name='${version_name}'\\\"">
+							<#assign args="${args} \\\"--detect.project.version.name=$'${version_name?jsString?jString}'\\\"">
 						<#else>
 							<#assign args="${args} '--detect.project.version.name=\\\"Pull Request $(cat .git/id)\\\"'"/>
 						</#if>
@@ -87,8 +88,8 @@
 						]
 					},
 					"params": {
-						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}",
-						"PROJECT_BUILD_COMMAND": "${build_command}",
+						"SPRING_APPLICATION_JSON": "{\"blackduck.hub.url\":\"${hub_url}\",\"blackduck.hub.username\":\"${hub_username}\",\"blackduck.hub.password\":\"${hub_password?jString}\", \"blackduck.hub.trust.cert\":true,\"detect.policy.check\":true}",
+						"PROJECT_BUILD_COMMAND": "${build_command?jString}",
 						"HUB_URL": "${hub_url}",
 						"HUB_DETECT_ARGS": "${args}",
 						"BUILD_ID": "${build_id}",
