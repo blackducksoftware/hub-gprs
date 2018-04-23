@@ -110,7 +110,7 @@ public class BuildController {
 		return "build";
 	}
 
-	@PreAuthorize("hasRole('ROLE_code_scanner')")
+	/* Limited access. Authorities defined in WebSecurityConfig class */
 	@PostMapping("/builds")
 	public String deployNewBuild(@RequestParam(required = true, name = "source_id") long sourceId,
 			@RequestParam(required = true, name = "build_type") String buildTypeName,
@@ -242,8 +242,8 @@ public class BuildController {
 		BuildStatus status = deploymentService.getStatus(build.getPipeline());
 		return new ResponseEntity<String>(status.toString(), HttpStatus.OK);
 	}
-
-	@PreAuthorize("ROLE_codescanner")
+	
+	/* Limited access. Authorities defined in WebSecurityConfig class */
 	@PutMapping("/builds/{id}")
 	public String applyBuildEdits(@PathVariable long id,
 			@RequestParam(required = true, name = "source_id") long sourceId,

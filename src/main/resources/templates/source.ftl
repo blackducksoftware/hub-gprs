@@ -19,7 +19,6 @@ KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
  -->
-<#ftl outputFormat="HTML">
 <h1><#if source??>Edit<#else>Add</#if> repository</h1>
 <div id="messageDiv" class="message">
 	<#if message??>

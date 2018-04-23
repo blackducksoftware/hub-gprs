@@ -28,7 +28,7 @@ read -s -p "Enter the password of your HUB installation and press [ENTER]: " hub
 
 echo HUB_URL=https://${hubHost}:${hubPort} > .env
 echo HUB_USERNAME=${hubUsername} >> .env
-echo HUB_PASSWORD=${hubPassword} >> .env
+echo "HUB_PASSWORD=${hubPassword}" >> .env
 
 mkdir -p keys/web keys/worker keys/ui
 
@@ -40,9 +40,9 @@ cp ./keys/worker/worker_key.pub ./keys/web/authorized_worker_keys
 cp ./keys/web/tsa_host_key.pub ./keys/worker
 
 
-echo ENCRYPTION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | head -n 1) >> .env
-echo CONCOURSE_PASSWRD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | head -n 1) >> .env
-echo DB_PASSWRD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | head -n 1) >> .env
+echo ENCRYPTION_KEY="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | head -n 1)" >> .env
+echo CONCOURSE_PASSWRD="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | head -n 1)" >> .env
+echo DB_PASSWRD="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | head -n 1)" >> .env
 
 
 #Build UI image

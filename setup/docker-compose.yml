@@ -3,8 +3,8 @@ version: '3.2'
 services:
   hub-scm-ui:
     labels: 
-      hub-scm:
-      hub-scm-wipe:
+      - "hub-scm"
+      - "hub-scm-wipe"
     image: blackducksoftware/hub-scm-ui
     depends_on: [hub-scm-db, concourse-web]
     ports: ["8666:8666"]
@@ -33,7 +33,7 @@ services:
         #logtarget: ${HUB_SCM_BUILD_LOG_DIR}
   hub-scm-db:
     labels: 
-      hub-scm:
+      - "hub-scm"
     image: postgres:9.5
     environment:
       POSTGRES_DB: hub-scm
@@ -42,8 +42,8 @@ services:
       PGDATA: /database
   concourse-web:
     labels: 
-      hub-scm:
-      hub-scm-wipe:
+      - "hub-scm"
+      - "hub-scm-wipe"
     image: concourse/concourse:3.9.2
     links: [hub-scm-db]
     #debugonlyports: ["8080:8080"]
@@ -61,8 +61,8 @@ services:
       CONCOURSE_POSTGRES_DATABASE: hub-scm
   concourse-worker:
     labels: 
-      hub-scm:
-      hub-scm-wipe:
+      - "hub-scm"
+      - "hub-scm-wipe"
     image: concourse/concourse:3.9.2
     privileged: true
     links: [concourse-web,hub-scm-ui]

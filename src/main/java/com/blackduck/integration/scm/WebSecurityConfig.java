@@ -36,22 +36,23 @@ import com.blackduck.integration.scm.auth.HubAuthenticationProvider;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+	private static final String[] SCAN_CREATE_AUTHORITIES = new String[] { "code_scanner", "global_code_scanner" };
+
 	@Value("${blackduck.hub.url}")
 	private String hubUrl;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		//Allow public access to static resources
-		http.authorizeRequests().antMatchers(HttpMethod.GET, "/img/**", "/js/**","/css/**").permitAll()
-		//Must have codescanner role to configure builds
-		.antMatchers(HttpMethod.PUT, "/builds/**").hasAnyAuthority("code_scanner")
-		.antMatchers(HttpMethod.POST, "/builds").hasAnyAuthority("code_scanner")
-		.antMatchers(HttpMethod.DELETE, "/builds/**").hasAnyAuthority("code_scanner")
-		//Authenticate everything else
-		.anyRequest().authenticated().and().httpBasic()
-		//Add logout URL
-		.and().formLogin().loginPage("/login").permitAll()
-		.and().csrf().ignoringAntMatchers("/login");
+		// Allow public access to static resources
+		http.authorizeRequests().antMatchers(HttpMethod.GET, "/img/**", "/js/**", "/css/**").permitAll()
+				// Must have codescanner role to configure builds
+				.antMatchers(HttpMethod.PUT, "/builds/**").hasAnyAuthority(SCAN_CREATE_AUTHORITIES)
+				.antMatchers(HttpMethod.POST, "/builds").hasAnyAuthority(SCAN_CREATE_AUTHORITIES)
+				.antMatchers(HttpMethod.DELETE, "/builds/**").hasAnyAuthority(SCAN_CREATE_AUTHORITIES)
+				// Authenticate everything else
+				.anyRequest().authenticated().and().httpBasic()
+				// Add logout URL
+				.and().formLogin().loginPage("/login").permitAll().and().csrf().ignoringAntMatchers("/login");
 	}
 
 	@Override

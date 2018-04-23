@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export HUB_DETECT_VERSION=3.1.0
+export HUB_DETECT_VERSION=3.1.1
 export EXPECTED_JDK_MD5=9c02c89f37d217d229203e59b57246a8
 
 compareMd5Sum(){
