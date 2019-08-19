@@ -32,3 +32,4 @@ nbdist/
 /setup/.*docker-compose*yml
 /setup/download/
 /.vscode/
+.DS_Store
