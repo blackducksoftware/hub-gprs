@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.10.RELEASE'
+		springBootVersion = '1.5.22.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -35,7 +35,7 @@ repositories {
 
 configurations.all {
 	resolutionStrategy {
-		eachDependency { DependencyResolveDetails details -> 
+		eachDependency { DependencyResolveDetails details ->
 			if (details.requested.group == 'org.apache.tomcat') {
 				details.useVersion versions.tomcat
 			}
@@ -56,10 +56,10 @@ dependencies {
 	}
 	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.4'
 	compile group: 'io.reactivex', name: 'rxapache-http', version: '0.21.0'
-	compile 'com.google.guava:guava:23.0'
+	compile 'com.google.guava:guava:28.0-jre'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
 	compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
-	compile group: 'org.apache.commons', name: 'commons-compress', version: '1.15'
+	compile group: 'org.apache.commons', name: 'commons-compress', version: '1.18'
 	compile group: 'javax.inject', name: 'javax.inject', version: '1.0.0.redhat-6'
 	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
 	compile group: 'com.blackducksoftware.integration', name: 'hub-common', version: '29.0.0'
