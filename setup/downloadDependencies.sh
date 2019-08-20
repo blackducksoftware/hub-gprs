@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export HUB_DETECT_VERSION=5.5.1
+export HUB_DETECT_VERSION=5.6.1
 export EXPECTED_JDK_MD5=9c02c89f37d217d229203e59b57246a8
 
 compareMd5Sum(){
@@ -35,7 +35,7 @@ fi
 #Download synopsys-detect
 if [ ! -e ./download/synopsys-detect.sh ] || [ ! -e ./download/synopsys-detect-${HUB_DETECT_VERSION}.jar ]; then
   rm -f download/synopsys-detect*
-  wget "https://detect.synopsys.com/detect.sh" -O download/synopsys-detect.sh && wget "https://repo.blackducksoftware.com/artifactory/bds-integrations-release/com/synopsys/integration/synopsys-detect/${HUB_DETECT_VERSION}/synopsys-detect-${HUB_DETECT_VERSION}.jar" -O download/synopsys-detect-${HUB_DETECT_VERSION}.jar
+  wget "https://detect.synopsys.com/detect.sh" -O download/synopsys-detect.sh && wget "https://sig-repo.synopsys.com/bds-integrations-release/com/synopsys/integration/synopsys-detect/${HUB_DETECT_VERSION}/synopsys-detect-${HUB_DETECT_VERSION}.jar" -O download/synopsys-detect-${HUB_DETECT_VERSION}.jar
   downloadSuccess=$?
   if [ "${downloadSuccess}" -ne "0" ]; then
     >&2 echo Synopsys-Detect download failed.
