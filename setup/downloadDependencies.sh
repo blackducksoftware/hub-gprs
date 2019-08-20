@@ -4,12 +4,12 @@ export HUB_DETECT_VERSION=5.5.1
 export EXPECTED_JDK_MD5=9c02c89f37d217d229203e59b57246a8
 
 compareMd5Sum(){
-			file=$1
-			expected=$2
-			actual="$(cat ""${file}"" 2>/dev/null | md5)"
-			if [ "$expected" != "$actual" ]; then
-							echo 'bad'
-			fi
+	file=$1
+	expected=$2
+	actual="$(cat ""${file}"" 2>/dev/null | md5)"
+	if [ "$expected" != "$actual" ]; then
+		echo 'bad'
+	fi
 }
 
 if [ ! -d ./download ]; then
@@ -17,8 +17,8 @@ if [ ! -d ./download ]; then
 fi;
 
 if [ -e ./download/jdk.tar.gz ] && [ "$(compareMd5Sum ./download/jdk.tar.gz $EXPECTED_JDK_MD5)" = "bad" ]; then
-			echo Incorrect prior JDK download detected $(cat ./download/jdk.tar.gz | md5). Re-downloading...
-			rm ./download/jdk.tar.gz
+	echo Incorrect prior JDK download detected $(cat ./download/jdk.tar.gz | md5). Re-downloading...
+	rm ./download/jdk.tar.gz
 fi
 
 #Download the JRE/JDK
