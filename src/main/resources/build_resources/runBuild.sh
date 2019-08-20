@@ -5,19 +5,15 @@ echo "          " > codebase-result/.build_url
 resultStatus="Build/scan failed. Policy violation status unknown."
 echo "$resultStatus" > codebase-result/.status_description
 
-
-
 #Do we have Java available? If not, download it from application
 
 if [ -z "$(which java)" ] || [ -z "${JAVA_HOME}" ]; then
-        wget http://hub-scm-ui:13666/jdk.tar.gz
-        mkdir /jdk
-        tar xvzf jdk.tar.gz -C /jdk
-        export JAVA_HOME="/jdk/$(ls /jdk)"
-        export PATH="${JAVA_HOME}/bin:${PATH}"
+    wget http://hub-scm-ui:13666/jdk.tar.gz
+    mkdir /jdk
+    tar xvzf jdk.tar.gz -C /jdk
+    export JAVA_HOME="/jdk/$(ls /jdk)"
+    export PATH="${JAVA_HOME}/bin:${PATH}"
 fi
-
-
 
 #Copy PR info into the result directory
 cp -r ./codebase-pr/.git ./codebase-result
@@ -40,7 +36,6 @@ cd /
 tar xvf "${START_DIR}/inject.tar"
 cd "$START_DIR"
 
-
 #Run the the build first
 $PROJECT_BUILD_COMMAND
 
@@ -58,9 +53,9 @@ detailUrl=$(grep 'To see your results, follow the URL:' synopsys-detect.log | se
 violationResult="$(grep 'Policy Status: IN_VIOLATION' synopsys-detect.log)"
 
 if [ ! -z "${violationResult}" ]; then
-        resultStatus="Policy violation(s) found."
-elif [ "$status" -eq "0" ]; then
-        resultStatus="No violations found."
+    resultStatus="Policy violation(s) found."
+    elif [ "$status" -eq "0" ]; then
+    resultStatus="No violations found."
 fi
 
 echo "$resultStatus"

@@ -21,29 +21,27 @@ version = '1.0.3'
 sourceCompatibility = 1.8
 
 jar {
-    manifest {
-        attributes 'Implementation-Version': version
-    }
+	manifest {
+		attributes 'Implementation-Version': version
+	}
 }
-
 
 repositories {
 	mavenCentral()
 	maven {
-        url 'https://maven.repository.redhat.com/ga/'
-    	}
+		url 'https://maven.repository.redhat.com/ga/'
+ 	}
 }
 
 configurations.all {
-  resolutionStrategy {
-    eachDependency { DependencyResolveDetails details ->
-      if (details.requested.group == 'org.apache.tomcat') {
-        details.useVersion versions.tomcat
-      }
-    }
-  }
+	resolutionStrategy {
+		eachDependency { DependencyResolveDetails details -> 
+			if (details.requested.group == 'org.apache.tomcat') {
+				details.useVersion versions.tomcat
+			}
+		}
+	}
 }
-
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
@@ -53,11 +51,11 @@ dependencies {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
 	}
 	compile ('org.springframework.boot:spring-boot-starter-undertow')
-	compile(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson_databind){
+	compile(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson_databind) {
 		force=true
 	}
 	compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.1.4'
-  compile group: 'io.reactivex', name: 'rxapache-http', version: '0.21.0'
+	compile group: 'io.reactivex', name: 'rxapache-http', version: '0.21.0'
 	compile 'com.google.guava:guava:23.0'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
 	compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
@@ -65,7 +63,6 @@ dependencies {
 	compile group: 'javax.inject', name: 'javax.inject', version: '1.0.0.redhat-6'
 	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
 	compile group: 'com.blackducksoftware.integration', name: 'hub-common', version: '29.0.0'
-
 
 	runtime('org.postgresql:postgresql')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
