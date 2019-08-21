@@ -14,16 +14,16 @@ if [ $? -ne 0 ]; then
     exit 127
 fi
 
-echo -n "Enter the hostname of your HUB installation and press [ENTER]: "
+echo -n "Enter the hostname of your Black Duck installation and press [ENTER]: "
 read hubHost
 
-echo -n "Enter the port of your HUB installation (typically 443) and press [ENTER]: "
+echo -n "Enter the port of your Black Duck installation (typically 443) and press [ENTER]: "
 read hubPort
 
-echo -n "Enter the username of your HUB installation and press [ENTER]: "
+echo -n "Enter the username of your Black Duck installation and press [ENTER]: "
 read hubUsername
 
-read -s -p "Enter the password of your HUB installation and press [ENTER]: " hubPassword
+read -s -p "Enter the password of your Black Duck installation and press [ENTER]: " hubPassword
 
 
 echo HUB_URL=https://${hubHost}:${hubPort} > .env
@@ -47,8 +47,6 @@ echo DB_PASSWRD="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9\(\)\!\@' | fold -w 32 | 
 
 #Build UI image
 cd ..
-./gradlew build  -x test 
+./gradlew build  -x test
 docker build . -f setup/ui_dockerfile -t blackducksoftware/hub-scm-ui --build-arg HUB_URL="${hubHost}:${hubPort}" --build-arg HUB_DETECT_VERSION="${HUB_DETECT_VERSION}"
 cd setup
-
-
